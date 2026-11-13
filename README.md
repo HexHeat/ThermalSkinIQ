@@ -1,18 +1,22 @@
 # ThermalSkinIQ website
 
-This repository contains a working static homepage for the ThermalSkinIQ brand based on the original HexHeat Discrete site structure but updated for the new ThermalSkinIQ positioning, messaging and woven-fabric technology story.
+A static multi-page website for ThermalSkinIQ™, based on the original HexHeat Discrete site structure and updated for the woven-fabric technology story.
 
-Files included:
-- `index.html` — homepage for the ThermalSkinIQ brand
-- `styles.css` — styling and layout
-- `assets/thermal-skiniq-logo.svg` — a temporary wordmark placeholder to use while the official logo file is added
-- `contact.html` — an example contact page using the same visual language
+## Pages
+- `index.html` — homepage
+- `install-design.html` — building applications
+- `install-planning.html` — project planning framework
+- `learning-center.html` — learning paths and resource guidance
+- `partners.html` — collaboration overview
+- `aethermal.html` — InfraWeave technology page
+- `contact.html` — contact information
+- `styles.css` — shared responsive styles
+- `assets/thermal-skiniq-logo.svg` — vector recreation of the logo artwork supplied in chat
 
-Notes:
-- The original `HexHeat/hexheatdiscrete` repository has been left untouched.
-- The branding and copy are intentionally adapted from the original messaging while focusing on the woven-fabric technology story and the ThermalSkinIQ platform.
-- Replace the placeholder logo file with the official asset once it is added to the repo.
+The original `HexHeat/hexheatdiscrete` repository is not modified. The supplied logo image was recreated as an SVG because the chat attachment itself was not available as a repository file. For an exact, pixel-matched logo, replace the SVG with the original PNG/SVG artwork file.
 
-To preview locally:
-- Open `index.html` in a browser, or
-- serve the folder with a simple static server such as `python -m http.server`.
+## Preview
+Open `index.html` in a browser, or serve this directory with a static web server, for example `python -m http.server`.
+
+## Content notes
+Technical performance and application statements use qualified language. Modeled figures, certifications, dimensions, electrical configurations and installation details should only be published after engineering review and confirmation against current approved product documents.

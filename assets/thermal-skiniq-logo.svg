@@ -1,96 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 360" role="img" aria-labelledby="title desc">
-  <title id="title">ThermalSkinIQ wordmark</title>
-  <desc id="desc">ThermalSkinIQ logo with silver and blue gradients, orange accent, and technology tagline.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 320" role="img" aria-labelledby="logo-title logo-description">
+  <title id="logo-title">ThermalSkinIQ logo</title>
+  <desc id="logo-description">ThermalSkinIQ wordmark with orange and blue accents and the tagline Every surface. Every season. Any temperature.</desc>
   <defs>
-    <linearGradient id="silverGrad" x1="0%" x2="100%" y1="0%" y2="0%">
-      <stop offset="0%" stop-color="#f7f9fb"/>
-      <stop offset="18%" stop-color="#dfe7ee"/>
-      <stop offset="36%" stop-color="#f9fafc"/>
-      <stop offset="56%" stop-color="#c9d9e5"/>
-      <stop offset="76%" stop-color="#f4f7fa"/>
-      <stop offset="100%" stop-color="#e3edf3"/>
-    </linearGradient>
-    <linearGradient id="blueGrad" x1="0%" x2="100%" y1="0%" y2="0%">
-      <stop offset="0%" stop-color="#4ad0ff"/>
-      <stop offset="50%" stop-color="#18a8ff"/>
-      <stop offset="100%" stop-color="#0d5ab0"/>
-    </linearGradient>
-    <linearGradient id="orangeGrad" x1="0%" x2="100%" y1="0%" y2="0%">
-      <stop offset="0%" stop-color="#ffb553"/>
-      <stop offset="50%" stop-color="#f58a27"/>
-      <stop offset="100%" stop-color="#ff6d00"/>
-    </linearGradient>
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/>
-    </filter>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".48" stop-color="#dce4e9"/><stop offset="1" stop-color="#aeb8bf"/></linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffb43f"/><stop offset="1" stop-color="#ff6d00"/></linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#55e6f4"/><stop offset="1" stop-color="#0077e8"/></linearGradient>
+    <filter id="glow" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="17" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
-
-  <rect width="1440" height="360" fill="none"/>
-
-  <g filter="url(#softShadow)">
-    <text x="720" y="205" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="177" font-weight="900" letter-spacing="-8" fill="url(#silverGrad)" style="paint-order:stroke; stroke:#dfe4ea; stroke-width:6;">ThermalSkinIQ</text>
-    <text x="720" y="205" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="177" font-weight="900" letter-spacing="-8" fill="none" style="stroke:rgba(255,255,255,0.65); stroke-width:2;">ThermalSkinIQ</text>
-  </g>
-
-  <g>
-    <text x="720" y="282" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" letter-spacing="5.8" fill="#E6F1F8" font-weight="700">EVERY SURFACE. EVERY SEASON. ANY TEMPERATURE</text>
-  </g>
-
-  <g transform="translate(1248,110)" filter="url(#softShadow)">
-    <circle r="38" fill="url(#orangeGrad)"/>
-    <circle r="21" fill="#0a335d" opacity="0.9"/>
-    <path d="M0 -25 L6 0 L0 25 L-6 0 Z" fill="#eaf5ff" opacity="0.85"/>
-  </g>
+  <rect width="1536" height="320" rx="8" fill="#030609"/>
+  <ellipse cx="690" cy="142" rx="570" ry="48" fill="#eef7ff" opacity=".1" filter="url(#glow)"/>
+  <text x="64" y="176" font-family="Arial, Helvetica, sans-serif" font-size="165" font-weight="700" letter-spacing="-8" fill="url(#metal)">Thermal</text>
+  <text x="810" y="176" font-family="Arial, Helvetica, sans-serif" font-size="165" font-weight="700" letter-spacing="-8" fill="url(#orange)">S</text>
+  <text x="915" y="176" font-family="Arial, Helvetica, sans-serif" font-size="165" font-weight="700" letter-spacing="-8" fill="url(#blue)">kin</text>
+  <text x="1190" y="176" font-family="Arial, Helvetica, sans-serif" font-size="165" font-weight="700" letter-spacing="-8" fill="url(#metal)">IQ</text>
+  <text x="1451" y="62" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#f2f5f7">TM</text>
+  <rect x="80" y="227" width="112" height="6" rx="3" fill="url(#orange)"/>
+  <text x="225" y="245" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="500" letter-spacing="7" fill="#f2f5f7">EVERY SURFACE. EVERY SEASON. ANY TEMPERATURE</text>
+  <rect x="1330" y="227" width="124" height="6" rx="3" fill="url(#blue)"/>
 </svg>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
