@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HexHeat Installation App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef2f5;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        /* Auth Screen Styles */
+        #authScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border-top: 5px solid #0056b3;
+        }
+
+            .auth-card input {
+                margin-bottom: 15px;
+                padding: 12px;
+                font-size: 16px;
+            }
+
+        .auth-btn {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+            .auth-btn:hover {
+                background-color: #004494;
+            }
+
+        .auth-secondary-btn {
+            background-color: transparent;
+            color: #0056b3;
+            border: 2px solid #0056b3;
+            padding: 12px;
+            width: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+            .auth-secondary-btn:hover {
+                background-color: #f4f7f6;
+            }
+
+        /* App Styles (Hidden until logged in) */
+        #appScreen {
+            display: none;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Cloud Dashboard */
+        .cloud-dashboard {
+            background: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid #cbd3da;
+        }
+
+        .load-btn {
+            background-color: #ffc107;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .project-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-top: 5px solid #0056b3;
+        }
+
+        .zone-block {
+            background: #fff;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
+        }
+
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+            .zone-header h2 {
+                margin: 0;
+                color: #0056b3;
+            }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+            input[readonly] {
+                background-color: #e9ecef;
+                font-weight: bold;
+                text-align: center;
+                color: #333;
+            }
+
+        .coverage-box {
+            background-color: #d1ecf1 !important;
+            color: #0c5460 !important;
+            font-size: 1.1em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f7f6;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .add-btn {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .add-zone-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(40,167,69,0.3);
+            margin-bottom: 40px;
+        }
+
+        .delete-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .remove-zone-btn {
+            background-color: transparent;
+            color: #ff4d4d;
+            border: 1px solid #ff4d4d;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 50px;
+        }
+
+        .print-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .save-btn {
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .circuit-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid #28a745;
+            border-right: 1px solid #eee;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+            .circuit-card.error {
+                background: #ffcccc;
+                border-left: 5px solid #cc0000;
+                color: #cc0000;
+            }
+
+        .takeoff-list {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .add-btn, .add-zone-btn, .remove-zone-btn, .delete-btn, .action-bar, .cloud-dashboard, .top-nav {
+                display: none !important;
+            }
+
+            .project-card, .zone-block {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+
+            input, select, textarea {
+                border: none;
+                border-bottom: 1px solid #ccc;
+                background: transparent;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                resize: none;
+                overflow: hidden;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="authScreen" class="container">
+        <div class="auth-card">
+            <img src="logo.png" alt="HexHeat" style="max-height: 70px; margin-bottom: 15px;">
+            <h1 style="color:#0056b3; margin-top:0;">HexHeat Portal</h1>
+            <p style="color:#666; margin-bottom: 25px;">Please log in to access your projects.</p>
+            <div id="authError" style="color:red; margin-bottom:10px; font-weight:bold; display:none;"></div>
+            <input type="email" id="email" placeholder="Email Address">
+            <input type="password" id="password" placeholder="Password">
+            <button class="auth-btn" onclick="signIn()">Log In</button>
+            <button class="auth-secondary-btn" onclick="signUp()">Create Account</button>
+        </div>
+    </div>
+
+    <div id="appScreen" class="container">
+        <div class="top-nav">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="logo.png" alt="HexHeat" style="max-height: 40px;">
+                <h2 style="margin: 0;">HexHeat Installation App</h2>
+            </div>
+            <div>
+                <span id="userEmailDisplay" style="margin-right:15px; font-weight:bold; color:#0056b3;"></span>
+                <button class="logout-btn" onclick="signOut()">Log Out</button>
+            </div>
+        </div>
+
+        <div class="cloud-dashboard">
+            <div style="flex:1;">
+                <label>Load Existing Project from Cloud:</label>
+                <select id="projectSelector">
+                    <option value="">-- Select a Project --</option>
+                </select>
+            </div>
+            <button class="load-btn" onclick="loadProjectFromCloud()" style="margin-top: 18px;">Load Project</button>
+            <button class="load-btn" onclick="startNewProject()" style="margin-top: 18px; background-color:#28a745; color:white;">Start Blank Project</button>
+        </div>
+
+        <section class="project-card">
+            <h2>Project Information</h2>
+            <div class="grid-2">
+                <div><label>Project Name</label><input type="text" id="projName" placeholder="e.g. Smith Residence Build"></div>
+                <div><label>Project Address</label><input type="text" id="projAddress" placeholder="123 Main St..."></div>
+                <div><label>Client Name</label><input type="text" id="clientName"></div>
+                <div><label>Client Phone</label><input type="text" id="clientPhone"></div>
+                <div><label>Installer Name</label><input type="text" id="installerName"></div>
+                <div><label>Installer Phone</label><input type="text" id="installerPhone"></div>
+            </div>
+            <div style="margin-top: 15px;">
+                <label>Project Notes</label>
+                <textarea id="projNotes" rows="3" placeholder="Enter custom notes, site conditions, or special instructions here..."></textarea>
+            </div>
+        </section>
+
+        <div id="zonesContainer"></div>
+
+        <button class="add-zone-btn" onclick="addZone()">+ Add New Zone / Room</button>
+
+        <section class="project-card" id="grandSummary" style="border-top: 5px solid #28a745;">
+            <h2>Project Material Takeoff & Summary</h2>
+            <div class="summary-grid">
+                <div class="circuit-card" style="border-left-color: #17a2b8;">
+                    <h3 style="margin-top:0;">Global Load</h3>
+                    <p>Total Project Watts: <strong id="gTotalWatts">0.00 W</strong></p>
+                    <p>Total Project Amps: <strong id="gTotalAmps">0.00 A</strong></p>
+                </div>
+                <div class="circuit-card" style="border-left-color: #ffc107;">
+                    <h3 style="margin-top:0;">Controls & Wiring</h3>
+                    <p>Thermostats: <strong id="gTotalThermostats">0</strong></p>
+                    <p>Power Modules: <strong id="gTotalModules">0</strong></p>
+                    <p>Sensor Conduits: <strong id="gTotalSensor">0</strong></p>
+                    <p>Power Conduits: <strong id="gTotalPower">0</strong></p>
+                </div>
+                <div class="circuit-card" style="border-left-color: #6f42c1;">
+                    <h3 style="margin-top:0;">Heater Takeoff</h3>
+                    <ul class="takeoff-list" id="gHeaterList">
+                        <li>No materials added yet.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="action-bar">
+            <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+            <button class="save-btn" onclick="saveProjectToCloud()" id="saveCloudBtn">Save Project to Cloud</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. SUPABASE DATABASE CONNECTION
+        // ==========================================
+        const SUPABASE_URL = 'https://icthxpjfaqzmaadlaqwz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGh4cGpmYXF6bWFhZGxhcXd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzMzMDUsImV4cCI6MjA4Nzc0OTMwNX0.__AhjbgVpt7jaGbig1tZ4biOBXlIoQH2FADslKmUaTc';
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUserId = null;
+        let activeProjectId = null; // Tracks if we are saving over an existing project
+        let zoneCounter = 0;
+
+        // Check if user is already logged in when page loads
+        window.onload = async function () {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                showApp(session.user);
+            } else {
+                addZone(); // Just set up a blank zone in the background
+            }
+        };
+
+        // ==========================================
+        // 2. AUTHENTICATION (LOGIN / SIGNUP)
+        // ==========================================
+        async function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { data, error } = await _supabase.auth.signUp({ email, password });
+
+            if (error) {
+                showAuthError(error.message);
+            } else {
+                alert("Account created successfully! You can now log in.");
+            }
+        }
+
+        async function signIn() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                showAuthError(error.message);
+            } else {
+                showApp(data.user);
+            }
+        }
+
+        async function signOut() {
+            await _supabase.auth.signOut();
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('appScreen').style.display = 'none';
+            currentUserId = null;
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function showAuthError(msg) {
+            const errDiv = document.getElementById('authError');
+            errDiv.innerText = msg;
+            errDiv.style.display = 'block';
+        }
+
+        function showApp(user) {
+            currentUserId = user.id;
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            document.getElementById('userEmailDisplay').innerText = "Logged in as: " + user.email;
+            fetchUserProjects(); // Load their saved projects into the dropdown
+        }
+
+        // ==========================================
+        // 3. CLOUD DATABASE (SAVE & LOAD)
+        // ==========================================
+
+        // Gathers all the data on the screen and builds a JSON package
+        function packageProjectData() {
+            let projectData = {
+                projName: document.getElementById('projName').value,
+                projAddress: document.getElementById('projAddress').value,
+                clientName: document.getElementById('clientName').value,
+                clientPhone: document.getElementById('clientPhone').value,
+                installerName: document.getElementById('installerName').value,
+                installerPhone: document.getElementById('installerPhone').value,
+                projNotes: document.getElementById('projNotes').value,
+                zones: []
+            };
+
+            const zoneBlocks = document.querySelectorAll('.zone-block');
+            zoneBlocks.forEach(zone => {
+                let zoneData = {
+                    roomType: zone.querySelector('.room-type').value,
+                    customRoomType: zone.querySelector('.custom-room-type').value,
+                    roomSqft: zone.querySelector('.room-sqft').value,
+                    thermoType: zone.querySelector('.thermostat-type').value,
+                    customThermoType: zone.querySelector('.custom-thermo-type').value,
+                    powerModuleType: zone.querySelector('.power-module-type').value,
+                    heaters: []
+                };
+
+                const rows = zone.querySelectorAll('.circuit-table-body tr');
+                rows.forEach(row => {
+                    const heaterSelect = row.querySelector('.heater-select').value;
+                    if (heaterSelect !== "0|0|0|0") {
+                        zoneData.heaters.push({
+                            circuit: row.querySelector('.circuit-select').value,
+                            heaterValue: heaterSelect, // The math string
+                            qty: row.querySelector('.qty-input').value
+                        });
+                    }
+                });
+                projectData.zones.push(zoneData);
+            });
+            return projectData;
+        }
+
+        async function saveProjectToCloud() {
+            const btn = document.getElementById('saveCloudBtn');
+            btn.innerText = "Saving...";
+
+            const pName = document.getElementById('projName').value || "Untitled Project";
+            const cName = document.getElementById('clientName').value || "No Client";
+            const dataPackage = packageProjectData();
+
+            if (activeProjectId) {
+                // Update existing project
+                const { error } = await _supabase
+                    .from('projects')
+                    .update({ project_name: pName, client_name: cName, project_data: dataPackage })
+                    .eq('id', activeProjectId);
+                if (error) alert("Error saving: " + error.message);
+                else alert("Project Updated Successfully!");
+            } else {
+                // Insert new project
+                const { data, error } = await _supabase
+                    .from('projects')
+                    .insert([{ user_id: currentUserId, project_name: pName, client_name: cName, project_data: dataPackage }])
+                    .select();
+
+                if (error) alert("Error saving: " + error.message);
+                else {
+                    alert("New Project Saved Successfully!");
+                    activeProjectId = data[0].id; // Set ID so future saves overwrite instead of duplicating
+                    fetchUserProjects();
+                }
+            }
+            btn.innerText = "Save Project to Cloud";
+        }
+
+        async function fetchUserProjects() {
+            const { data, error } = await _supabase
+                .from('projects')
+                .select('id, project_name, updated_at')
+                .order('updated_at', { ascending: false });
+
+            if (data) {
+                const selector = document.getElementById('projectSelector');
+                selector.innerHTML = '<option value="">-- Select a Project --</option>';
+                data.forEach(proj => {
+                    const date = new Date(proj.updated_at).toLocaleDateString();
+                    selector.innerHTML += `<option value="${proj.id}">${proj.project_name} (${date})</option>`;
+                });
+            }
+        }
+
+        async function loadProjectFromCloud() {
+            const selectedId = document.getElementById('projectSelector').value;
+            if (!selectedId) return alert("Please select a project from the dropdown first.");
+
+            const { data, error } = await _supabase
+                .from('projects')
+                .select('project_data')
+                .eq('id', selectedId)
+                .single();
+
+            if (error) return alert("Error loading project.");
+
+            activeProjectId = selectedId;
+            const pData = data.project_data;
+
+            // 1. Fill basic info
+            document.getElementById('projName').value = pData.projName || '';
+            document.getElementById('projAddress').value = pData.projAddress || '';
+            document.getElementById('clientName').value = pData.clientName || '';
+            document.getElementById('clientPhone').value = pData.clientPhone || '';
+            document.getElementById('installerName').value = pData.installerName || '';
+            document.getElementById('installerPhone').value = pData.installerPhone || '';
+            document.getElementById('projNotes').value = pData.projNotes || '';
+
+            // 2. Clear current zones and rebuild from data
+            document.getElementById('zonesContainer').innerHTML = '';
+            zoneCounter = 0;
+
+            if (pData.zones && pData.zones.length > 0) {
+                pData.zones.forEach(zoneData => {
+                    addZone(); // creates a blank zone at the bottom
+                    const allZones = document.querySelectorAll('.zone-block');
+                    const newZone = allZones[allZones.length - 1]; // The one we just added
+
+                    newZone.querySelector('.room-type').value = zoneData.roomType;
+                    if (zoneData.roomType === "Other") {
+                        newZone.querySelector('.custom-room-type').style.display = "block";
+                        newZone.querySelector('.custom-room-type').value = zoneData.customRoomType || '';
+                    }
+                    updateZoneTitle(newZone.querySelector('.room-type'));
+
+                    newZone.querySelector('.room-sqft').value = zoneData.roomSqft;
+
+                    newZone.querySelector('.thermostat-type').value = zoneData.thermoType;
+                    if (zoneData.thermoType === "Other") {
+                        newZone.querySelector('.custom-thermo-type').style.display = "block";
+                        newZone.querySelector('.custom-thermo-type').value = zoneData.customThermoType || '';
+                    }
+
+                    if (zoneData.powerModuleType) {
+                        newZone.querySelector('.power-module-type').value = zoneData.powerModuleType;
+                    }
+
+                    // Clear the default empty heater row
+                    newZone.querySelector('.circuit-table-body').innerHTML = '';
+
+                    // Add saved heaters
+                    zoneData.heaters.forEach(hData => {
+                        addHeaterRow(newZone.querySelector('.add-btn'));
+                        const allRows = newZone.querySelectorAll('.circuit-table-body tr');
+                        const newRow = allRows[allRows.length - 1];
+
+                        newRow.querySelector('.circuit-select').value = hData.circuit;
+                        newRow.querySelector('.heater-select').value = hData.heaterValue;
+                        newRow.querySelector('.qty-input').value = hData.qty;
+                    });
+
+                    calculateZoneTotals(newZone.querySelector('.room-type'));
+                });
+            }
+            alert("Project Loaded!");
+        }
+
+        function startNewProject() {
+            activeProjectId = null;
+            document.getElementById('projName').value = '';
+            document.getElementById('projAddress').value = '';
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('installerName').value = '';
+            document.getElementById('installerPhone').value = '';
+            document.getElementById('projNotes').value = '';
+            document.getElementById('zonesContainer').innerHTML = '';
+            zoneCounter = 0;
+            addZone();
+            updateGrandTotals();
+            document.getElementById('projectSelector').value = "";
+        }
+
+        // ==========================================
+        // 4. CALCULATOR ENGINE (MATH & LOGIC)
+        // ==========================================
+        const MAX_AMPS = 12;
+
+        function getQtyOptions() {
+            let options = '';
+            for (let i = 1; i <= 20; i++) {
+                options += `<option value="${i}">${i}</option>`;
+            }
+            return options;
+        }
+
+        function updateZoneNumbers() {
+            const zones = document.querySelectorAll('.zone-block');
+            zones.forEach((zone, index) => {
+                const numSpan = zone.querySelector('.zone-number');
+                if (numSpan) numSpan.innerText = index + 1;
+            });
+        }
+
+        function handleRoomTypeChange(selectElement) {
+            const customInput = selectElement.nextElementSibling;
+            if (selectElement.value === "Other") {
+                customInput.style.display = "block";
+            } else {
+                customInput.style.display = "none";
+                customInput.value = "";
+            }
+            updateZoneTitle(selectElement);
+        }
+
+        function handleThermoTypeChange(selectElement) {
+            const customInput = selectElement.nextElementSibling;
+            if (selectElement.value === "Other") {
+                customInput.style.display = "block";
+            } else {
+                customInput.style.display = "none";
+                customInput.value = "";
+            }
+            updateGrandTotals();
+        }
+
+        function addZone() {
+            zoneCounter++;
+            const zoneDiv = document.createElement('div');
+            zoneDiv.className = 'zone-block';
+
+            zoneDiv.innerHTML = `
+                    <div class="zone-header">
+                        <h2>Zone <span class="zone-number"></span>: <span class="zone-title-display">Bedroom</span></h2>
+                        <button class="remove-zone-btn" onclick="removeZone(this)">Remove Zone</button>
+                    </div>
+                    <div class="grid">
+                        <div>
+                            <label>Room Type</label>
+                            <select class="room-type" onchange="handleRoomTypeChange(this); calculateZoneTotals(this)">
+                                <option value="Bedroom">Bedroom</option><option value="Bathroom">Bathroom</option><option value="Kitchen">Kitchen</option><option value="Laundry">Laundry</option><option value="Living room">Living room</option><option value="Rec room">Rec room</option><option value="Foyer">Foyer</option><option value="Dining">Dining</option><option value="Hallway">Hallway</option><option value="Closet">Closet</option><option value="Theatre">Theatre</option><option value="GYM">GYM</option><option value="Garage">Garage</option><option value="Office">Office</option><option value="Entrance">Entrance</option><option value="Mudroom">Mudroom</option><option value="Master Bedroom">Master Bedroom</option><option value="Onsuite">Onsuite</option><option value="Other">Other (Custom)</option>
+                            </select>
+                            <input type="text" class="custom-room-type" placeholder="Enter custom room name" style="display:none; margin-top:5px;" oninput="updateZoneTitle(this); calculateZoneTotals(this)">
+                        </div>
+                        <div><label>Total Room Sq.Ft.</label><input type="number" class="room-sqft" value="0" min="0" oninput="calculateZoneTotals(this)"></div>
+                        <div><label>Total Heater Sq.Ft.</label><input type="number" class="heater-sqft-total" readonly value="0"></div>
+                        <div><label>Coverage Percentage</label><input type="text" class="coverage-percentage coverage-box" readonly value="0%"></div>
+                    </div>
+                    <div class="materials-grid">
+                        <div>
+                            <label>Thermostat Model</label>
+                            <select class="thermostat-type" onchange="handleThermoTypeChange(this)">
+                                <option value="UWG4 (Wifi) Class A 5ma 120/240V">UWG4 (Wifi) Class A 5ma 120/240V</option>
+                                <option value="UDG4 (non-wifi) Class A 5ma 120/240V">UDG4 (non-wifi) Class A 5ma 120/240V</option>
+                                <option value="UTN4 (non-programmable) Class A 5ma 120/240V">UTN4 (non-programmable) Class A 5ma 120/240V</option>
+                                <option value="UWG5 (wifi + voice) Class A 5ma 120/240V">UWG5 (wifi + voice) Class A 5ma 120/240V</option>
+                                <option value="Other">Other (Custom)</option>
+                            </select>
+                            <input type="text" class="custom-thermo-type" placeholder="Enter custom model" style="display:none; margin-top:5px;" oninput="updateGrandTotals()">
+                        </div>
+                        <div><label>Thermostats</label><input type="number" class="thermostat-qty" readonly value="0"></div>
+                        <div>
+                            <label>Power Module Model</label>
+                            <select class="power-module-type" onchange="updateGrandTotals()">
+                                <option value="USG/USG5 Class A 5ma GFCI 120/240V">USG/USG5 Class A 5ma GFCI 120/240V</option>
+                                <option value="ASG 15ma EGFPD 120/240V">ASG 15ma EGFPD 120/240V</option>
+                            </select>
+                        </div>
+                        <div><label>Power Modules</label><input type="number" class="power-module-qty" readonly value="0"></div>
+                        <div><label>Sensor Conduit</label><input type="number" class="sensor-conduit-qty" readonly value="0"></div>
+                        <div><label>Power Conduit</label><input type="number" class="power-conduit-qty" readonly value="0"></div>
+                    </div>
+                    <h3 style="margin-top: 30px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Circuit Calculator</h3>
+                    <div class="alert warning-message"></div>
+                    <table>
+                        <thead><tr><th>Circuit</th><th>Heater Type</th><th>Qty</th><th>Watts</th><th>Amps</th><th>Action</th></tr></thead>
+                        <tbody class="circuit-table-body"></tbody>
+                    </table>
+                    <button class="add-btn" onclick="addHeaterRow(this)">+ Add Heater to Zone</button>
+                    <h3 style="margin-top: 30px;">Circuit Totals</h3>
+                    <div class="summary-grid circuit-summaries"></div>
+                `;
+
+            document.getElementById('zonesContainer').appendChild(zoneDiv);
+            addHeaterRow(zoneDiv.querySelector('.add-btn'));
+            updateZoneTitle(zoneDiv.querySelector('.room-type'));
+            updateZoneNumbers();
+        }
+
+        function removeZone(button) {
+            if (confirm("Are you sure you want to delete this entire zone?")) {
+                button.closest('.zone-block').remove();
+                updateZoneNumbers();
+                updateGrandTotals();
+            }
+        }
+
+        function updateZoneTitle(element) {
+            const zone = element.closest('.zone-block');
+            const select = zone.querySelector('.room-type');
+            const custom = zone.querySelector('.custom-room-type');
+            const titleDisplay = zone.querySelector('.zone-title-display');
+
+            titleDisplay.innerText = select.value === "Other" && custom.value ? custom.value : select.value;
+        }
+
+        function addHeaterRow(elementInsideZone) {
+            const zone = elementInsideZone.closest('.zone-block');
+            const tbody = zone.querySelector('.circuit-table-body');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                    <td>
+                        <select class="circuit-select" onchange="calculateZoneTotals(this)">
+                            <option value="1">Circuit 1</option><option value="2">Circuit 2</option><option value="3">Circuit 3</option><option value="4">Circuit 4</option><option value="5">Circuit 5</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="heater-select" onchange="calculateZoneTotals(this)">
+                            <option value="0|0|0|0">Select a Heater...</option>
+                            <optgroup label="115V System Heaters">
+                                <option value="57|0.5|115|6">115v 2x3 (6 sqft, 57W, 0.5A)</option>
+                                <option value="98|0.86|115|10">115v 2x5 (10 sqft, 98W, 0.86A)</option>
+                                <option value="120|1.04|115|12">115v 3x4 (12 sqft, 120W, 1.04A)</option>
+                                <option value="183|1.59|115|18">115v 3x6 (18 sqft, 183W, 1.59A)</option>
+                            </optgroup>
+                            <optgroup label="220V System Heaters">
+                                <option value="78|0.35|220|8">220v 2x4 (8 sqft, 78W, 0.35A)</option>
+                                <option value="119|0.54|220|12">220v 2x6 (12 sqft, 119W, 0.54A)</option>
+                                <option value="160|0.73|220|16">220v 2x8 (16 sqft, 160W, 0.73A)</option>
+                                <option value="201|0.91|220|20">220v 2x10 (20 sqft, 201W, 0.91A)</option>
+                                <option value="245|1.12|220|24">220v 3x8 (24 sqft, 245W, 1.12A)</option>
+                                <option value="308|1.4|220|30">220v 3x10 (30 sqft, 308W, 1.4A)</option>
+                            </optgroup>
+                        </select>
+                    </td>
+                    <td><select class="qty-input" onchange="calculateZoneTotals(this)">${getQtyOptions()}</select></td>
+                    <td><input type="number" class="watts-input" readonly></td>
+                    <td><input type="number" class="amps-input" readonly></td>
+                    <td><button class="delete-btn" onclick="removeRow(this)">X</button></td>
+                `;
+
+            tbody.appendChild(row);
+            calculateZoneTotals(zone);
+        }
+
+        function removeRow(button) {
+            const row = button.parentElement.parentElement;
+            const zone = row.closest('.zone-block');
+            row.remove();
+            calculateZoneTotals(zone);
+        }
+
+        function calculateZoneTotals(elementInsideZone) {
+            const zone = elementInsideZone.closest('.zone-block');
+            const rows = zone.querySelectorAll('.circuit-table-body tr');
+
+            let circuitTotals = {
+                "1": { watts: 0, amps: 0, voltages: new Set() }, "2": { watts: 0, amps: 0, voltages: new Set() }, "3": { watts: 0, amps: 0, voltages: new Set() }, "4": { watts: 0, amps: 0, voltages: new Set() }, "5": { watts: 0, amps: 0, voltages: new Set() }
+            };
+            let grandTotalHeaterSqFt = 0;
+
+            rows.forEach(row => {
+                const circuitId = row.querySelector('.circuit-select').value;
+                const heaterSelect = row.querySelector('.heater-select').value;
+                const qty = parseInt(row.querySelector('.qty-input').value) || 1;
+
+                if (heaterSelect === "0|0|0|0") return;
+
+                const heaterData = heaterSelect.split('|');
+                const rowWatts = (parseFloat(heaterData[0]) || 0) * qty;
+                const rowAmps = (parseFloat(heaterData[1]) || 0) * qty;
+                const rowSqFt = (parseFloat(heaterData[3]) || 0) * qty;
+                const heaterVolts = parseInt(heaterData[2]) || 0;
+
+                row.querySelector('.watts-input').value = rowWatts.toFixed(2);
+                row.querySelector('.amps-input').value = rowAmps.toFixed(2);
+
+                circuitTotals[circuitId].watts += rowWatts;
+                circuitTotals[circuitId].amps += rowAmps;
+                grandTotalHeaterSqFt += rowSqFt;
+                if (heaterVolts > 0) circuitTotals[circuitId].voltages.add(heaterVolts);
+            });
+
+            zone.querySelector('.heater-sqft-total').value = grandTotalHeaterSqFt;
+            const roomSqFt = parseFloat(zone.querySelector('.room-sqft').value) || 0;
+            let coverage = 0;
+            if (roomSqFt > 0) coverage = (grandTotalHeaterSqFt / roomSqFt) * 100;
+            zone.querySelector('.coverage-percentage').value = coverage.toFixed(1) + '%';
+
+            updateZoneSummaryUI(zone, circuitTotals);
+        }
+
+        function updateZoneSummaryUI(zone, circuitTotals) {
+            const summaryContainer = zone.querySelector('.circuit-summaries');
+            summaryContainer.innerHTML = '';
+            let allWarnings = [];
+            let activeCircuitsCount = 0;
+
+            for (let i = 1; i <= 5; i++) {
+                const circuit = circuitTotals[i.toString()];
+                if (circuit.watts > 0 || circuit.amps > 0) {
+                    activeCircuitsCount++;
+                    let errorClass = '';
+                    const voltagesArr = Array.from(circuit.voltages);
+
+                    if (voltagesArr.includes(115) && voltagesArr.includes(220)) {
+                        allWarnings.push(`CRITICAL: Circuit ${i} contains both 115V and 220V heaters!`);
+                        errorClass = 'error';
+                    } else {
+                        const circuitVolts = voltagesArr[0] || 115;
+                        const maxWatts = circuitVolts === 220 ? 2800 : 1400;
+
+                        if (circuit.amps > MAX_AMPS) { allWarnings.push(`CRITICAL: Circuit ${i} Amperage (${circuit.amps.toFixed(2)}A) exceeds 12A limit!`); errorClass = 'error'; }
+                        if (circuit.watts > maxWatts) { allWarnings.push(`CRITICAL: Circuit ${i} Wattage (${circuit.watts.toFixed(2)}W) exceeds ${maxWatts}W limit!`); errorClass = 'error'; }
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = `circuit-card ${errorClass}`;
+                    card.innerHTML = `<h4 style="margin:0 0 10px 0;">Circuit ${i}</h4><p style="margin:3px 0; font-size:0.9em;">Voltage: <strong>${voltagesArr.length === 1 ? voltagesArr[0] + 'V' : 'MIXED'}</strong></p><p style="margin:3px 0; font-size:0.9em;">Total Watts: <strong>${circuit.watts.toFixed(2)} W</strong></p><p style="margin:3px 0; font-size:0.9em;">Total Amps: <strong>${circuit.amps.toFixed(2)} A</strong></p>`;
+                    summaryContainer.appendChild(card);
+                }
+            }
+
+            if (activeCircuitsCount > 0) {
+                zone.querySelector('.thermostat-qty').value = 1;
+                zone.querySelector('.power-module-qty').value = activeCircuitsCount - 1;
+                zone.querySelector('.sensor-conduit-qty').value = 1;
+                zone.querySelector('.power-conduit-qty').value = activeCircuitsCount;
+            } else {
+                zone.querySelector('.thermostat-qty').value = 0; zone.querySelector('.power-module-qty').value = 0; zone.querySelector('.sensor-conduit-qty').value = 0; zone.querySelector('.power-conduit-qty').value = 0;
+            }
+
+            const warningBox = zone.querySelector('.warning-message');
+            if (allWarnings.length > 0) {
+                warningBox.style.display = 'block'; warningBox.innerHTML = allWarnings.join('<br><br>'); warningBox.style.backgroundColor = '#ffcccc'; warningBox.style.color = '#cc0000';
+            } else { warningBox.style.display = 'none'; }
+
+            updateGrandTotals();
+        }
+
+        function updateGrandTotals() {
+            let gWatts = 0, gAmps = 0, gThermostats = 0, gModules = 0, gSensor = 0, gPower = 0;
+            let heaterTakeoff = {}; let thermoTakeoff = {}; let moduleTakeoff = {};
+
+            document.querySelectorAll('.zone-block').forEach(zone => {
+
+                // Track Thermostats
+                let thermoType = zone.querySelector('.thermostat-type').value;
+                if (thermoType === "Other") {
+                    thermoType = zone.querySelector('.custom-thermo-type').value || "Custom Thermostat Model";
+                }
+                const thermoQty = parseInt(zone.querySelector('.thermostat-qty').value) || 0;
+
+                if (thermoQty > 0) {
+                    gThermostats += thermoQty;
+                    thermoTakeoff[thermoType] = (thermoTakeoff[thermoType] || 0) + thermoQty;
+                }
+
+                // Track Power Modules
+                const modType = zone.querySelector('.power-module-type').value;
+                const modQty = parseInt(zone.querySelector('.power-module-qty').value) || 0;
+
+                if (modQty > 0) {
+                    gModules += modQty;
+                    moduleTakeoff[modType] = (moduleTakeoff[modType] || 0) + modQty;
+                }
+
+                gSensor += parseInt(zone.querySelector('.sensor-conduit-qty').value) || 0;
+                gPower += parseInt(zone.querySelector('.power-conduit-qty').value) || 0;
+
+                zone.querySelectorAll('.circuit-table-body tr').forEach(row => {
+                    const select = row.querySelector('.heater-select');
+                    if (select.value === "0|0|0|0") return;
+
+                    const heaterName = select.options[select.selectedIndex].text.split('(')[0].trim();
+                    const qty = parseInt(row.querySelector('.qty-input').value) || 1;
+
+                    gWatts += parseFloat(row.querySelector('.watts-input').value) || 0;
+                    gAmps += parseFloat(row.querySelector('.amps-input').value) || 0;
+
+                    if (heaterTakeoff[heaterName]) heaterTakeoff[heaterName] += qty;
+                    else heaterTakeoff[heaterName] = qty;
+                });
+            });
+
+            document.getElementById('gTotalWatts').innerText = gWatts.toFixed(2) + ' W';
+            document.getElementById('gTotalAmps').innerText = gAmps.toFixed(2) + ' A';
+            document.getElementById('gTotalThermostats').innerText = gThermostats;
+            document.getElementById('gTotalModules').innerText = gModules;
+            document.getElementById('gTotalSensor').innerText = gSensor;
+            document.getElementById('gTotalPower').innerText = gPower;
+
+            const listEl = document.getElementById('gHeaterList');
+            listEl.innerHTML = '';
+
+            if (Object.keys(heaterTakeoff).length === 0 && Object.keys(thermoTakeoff).length === 0 && Object.keys(moduleTakeoff).length === 0) {
+                listEl.innerHTML = '<li>No materials added yet.</li>';
+            } else {
+                for (const [name, qty] of Object.entries(thermoTakeoff)) listEl.innerHTML += `<li><strong>${qty}x</strong> Thermostat: ${name}</li>`;
+                for (const [name, qty] of Object.entries(moduleTakeoff)) listEl.innerHTML += `<li><strong>${qty}x</strong> Power Module: ${name}</li>`;
+                for (const [name, qty] of Object.entries(heaterTakeoff)) listEl.innerHTML += `<li><strong>${qty}x</strong> Heater: ${name}</li>`;
+            }
+        }
+    </script>
+</body>
+</html>
