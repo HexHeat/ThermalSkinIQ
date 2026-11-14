@@ -1,0 +1,38 @@
+ThermalSkinIQ™
+Intelligent radiant surfaces
+Powered by InfraWeave™ carbon-fabric technology
+
+TECHNOLOGY OVERVIEW
+ThermalSkinIQ transforms approved building surfaces into low-profile radiant-heating systems. InfraWeave is a highly carbonized, orthogonally interlaced conductive fabric arranged in an engineered serpentine configuration.
+
+TECHNOLOGY DESCRIPTION
+The heating assembly incorporates a woven conductive-fabric resistance element arranged in a controlled serpentine configuration within a panel assembly. The platform is designed for broad-area radiant heating and integration into approved floor, wall, or ceiling assemblies.
+
+ELECTRICAL DESIGN
+Assemblies may be engineered for specified 120 V or 240 V circuits. Resistance, wattage, current, terminals, temperature controls, sensors, safety devices, and compatible finishes must be coordinated with the approved electrical and thermal design, installation requirements, and applicable codes and certifications.
+
+BASIS OF DESIGN
+ThermalSkinIQ radiant-heating panels incorporating InfraWeave highly carbonized, orthogonally interlaced conductive-fabric heating elements arranged in an engineered serpentine configuration and designed for operation on the specified 120 V or 240 V electrical circuit.
+
+APPLICATION
+The system is intended for approved commercial and residential floor, wall, or ceiling assemblies. Application is subject to project-specific thermal and electrical design, installation requirements, finished-surface limitations, and applicable certifications.
+
+MODELED THERMAL-SPREADER COMPARISON
+The supplied model compares a bare laminate configuration with an assembly incorporating a 0.1 mm aluminum thermal spreader.
+
+Bare laminate:
+Mean temperature rise: 10.2 K
+P95 temperature rise: 12.2 K
+Peak temperature rise: 13.9 K
+Predicted mean at 20°C ambient: 30.2°C
+Predicted peak at 20°C ambient: 33.9°C
+
+With 0.1 mm aluminum spreader:
+Mean temperature rise: 10.2 K
+P95 temperature rise: 10.9 K
+Peak temperature rise: 11.0 K
+Predicted mean at 20°C ambient: 30.2°C
+Predicted peak at 20°C ambient: 31.0°C
+
+CLAIMS AND PERFORMANCE
+The thermal figures above are modeled estimates, not independently validated physical results. Representative physical assemblies should be tested before making validated performance claims. Actual performance depends on the complete installed assembly and conditions. Compatible finishes must be confirmed through testing and installation requirements.
