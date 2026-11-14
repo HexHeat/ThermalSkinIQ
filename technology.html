@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technology - ThermalSkinIQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hexBlue: '#0f2942',
+                        hexLightBlue: '#8ba8c4',
+                        hexOrange: '#f49820',
+                        hexRed: '#e42413',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans text-gray-800 antialiased bg-gray-50 relative">
+
+    <header class="bg-white shadow-md sticky top-0 z-50 w-full overflow-hidden">
+        <input type="checkbox" id="mobile-menu-toggle" class="peer hidden">
+        <div class="bg-hexBlue h-2 w-full"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full">
+            <div class="flex justify-between items-center py-2 w-full">
+                <div class="flex items-center w-3/4 lg:w-auto">
+                    <a href="index.html" class="block w-full">
+                        <img class="h-24 md:h-32 lg:h-40 w-auto max-w-full object-contain transition-all" src="assets/thermal-skiniq-logo.svg" alt="ThermalSkinIQ logo">
+                    </a>
+                </div>
+                <div class="block lg:hidden ml-auto flex-shrink-0">
+                    <label for="mobile-menu-toggle" class="text-hexBlue hover:text-hexOrange focus:outline-none p-2 border border-transparent rounded hover:bg-gray-100 transition cursor-pointer block">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                </div>
+                <nav class="hidden lg:flex space-x-6 text-sm font-semibold text-hexBlue items-center flex-shrink-0">
+                    <a href="index.html" class="hover:text-hexOrange transition py-2">Home</a>
+                    <a href="technology.html" class="text-hexOrange transition border-b-2 border-hexOrange py-2">Technology</a>
+                    <a href="install-design.html" class="hover:text-hexOrange transition py-2">Install Design</a>
+                    <a href="install-planning.html" class="hover:text-hexOrange transition py-2">Install Planning</a>
+                    <a href="learning-center.html" class="hover:text-hexOrange transition py-2">Learning Center</a>
+                    <a href="partners.html" class="hover:text-hexOrange transition py-2">Partners</a>
+                    <a href="aethermal.html" class="hover:text-hexOrange transition py-2">AEThermal Solutions</a>
+                    <a href="#" class="hover:text-hexOrange transition py-2">Continuing Education</a>
+                    <a href="#" class="hover:text-hexOrange transition py-2">News</a>
+                    <a href="contact.html" class="hover:text-hexOrange transition py-2">Contact</a>
+                </nav>
+            </div>
+        </div>
+        <div class="hidden peer-checked:block lg:hidden bg-white border-t border-gray-200 shadow-2xl absolute w-full left-0 z-40 origin-top transition-all">
+            <div class="px-4 pt-2 pb-6 space-y-1 shadow-inner">
+                <a href="index.html" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">Home</a>
+                <a href="technology.html" class="block px-3 py-3 rounded-md text-base font-bold text-hexOrange bg-gray-100 border-l-4 border-hexOrange">Technology</a>
+                <a href="install-design.html" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">Install Design</a>
+                <a href="install-planning.html" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">Install Planning</a>
+                <a href="learning-center.html" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">Learning Center</a>
+                <a href="partners.html" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">Partners</a>
+                <a href="aethermal.html" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">AEThermal Solutions</a>
+                <a href="#" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">Continuing Education</a>
+                <a href="#" class="block px-3 py-3 rounded-md text-base font-semibold text-hexBlue hover:text-hexOrange hover:bg-gray-50">News</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="bg-hexBlue text-white py-16 lg:py-24">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <p class="text-sm font-bold tracking-widest text-hexOrange uppercase mb-3">Powered by InfraWeave™ carbon-fabric technology</p>
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-6">Intelligent radiant surfaces</h1>
+                <p class="text-lg md:text-xl text-gray-200 leading-relaxed max-w-4xl mx-auto">
+                    ThermalSkinIQ™ transforms approved building surfaces into low-profile radiant-heating systems. At the core of the platform is InfraWeave™, a highly carbonized, orthogonally interlaced conductive fabric arranged in an engineered serpentine configuration.
+                </p>
+            </div>
+        </section>
+
+        <section class="py-16 lg:py-20 bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <p class="text-sm font-bold tracking-widest text-hexOrange uppercase mb-2">The technology</p>
+                    <h2 class="text-3xl font-extrabold text-hexBlue mb-5">The difference is in the weave</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        InfraWeave™ uses highly carbonized woven conductive fabric to produce broad-area radiant heat. Its orthogonally interlaced architecture is formed into a controlled serpentine path designed to distribute electrical energy across the heating surface.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        Rather than relying on a conventional cable or isolated resistance wire, the heating function is carried through a woven conductive element arranged across the panel surface.
+                    </p>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-8 lg:p-10">
+                    <h3 class="text-xl font-bold text-hexBlue mb-5">A platform built in layers</h3>
+                    <ol class="space-y-5">
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-9 h-9 rounded-full bg-hexOrange text-white font-bold flex items-center justify-center">1</span>
+                            <div><h4 class="font-bold text-hexBlue">Woven heating element</h4><p class="text-gray-600 text-sm mt-1">Highly carbonized, orthogonally interlaced conductive fabric.</p></div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-9 h-9 rounded-full bg-hexOrange text-white font-bold flex items-center justify-center">2</span>
+                            <div><h4 class="font-bold text-hexBlue">Panel assembly</h4><p class="text-gray-600 text-sm mt-1">A serpentine element integrated into configurable, low-profile panels.</p></div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-9 h-9 rounded-full bg-hexOrange text-white font-bold flex items-center justify-center">3</span>
+                            <div><h4 class="font-bold text-hexBlue">Sensing and control</h4><p class="text-gray-600 text-sm mt-1">A platform designed to support temperature sensing and independently managed zones.</p></div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 lg:py-20 bg-gray-50 border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto text-center mb-12">
+                    <p class="text-sm font-bold tracking-widest text-hexOrange uppercase mb-2">Designed for integration</p>
+                    <h2 class="text-3xl font-extrabold text-hexBlue mb-4">One technology platform. Flexible configurations.</h2>
+                    <p class="text-gray-700 leading-relaxed">ThermalSkinIQ is designed for residential and commercial projects, including new construction, renovation and retrofit, subject to project-specific design and approved assembly requirements.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <article class="bg-white p-7 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-bold text-hexBlue mb-3">Broad-area radiant heating</h3>
+                        <p class="text-gray-600 leading-relaxed">The woven conductive element is arranged across a panel surface to provide a broad-area heating architecture.</p>
+                    </article>
+                    <article class="bg-white p-7 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-bold text-hexBlue mb-3">Configurable panel design</h3>
+                        <p class="text-gray-600 leading-relaxed">Panel dimensions, element layout and thermal-spreader construction can be configured for different building assemblies.</p>
+                    </article>
+                    <article class="bg-white p-7 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-bold text-hexBlue mb-3">Zones and controls</h3>
+                        <p class="text-gray-600 leading-relaxed">The platform is intended to support independently managed heating areas, temperature sensing and future building-control integration.</p>
+                    </article>
+                </div>
+                <div class="mt-8 bg-white p-7 rounded-xl border border-gray-200">
+                    <h3 class="text-xl font-bold text-hexBlue mb-3">Electrical design</h3>
+                    <p class="text-gray-700 leading-relaxed">Heating assemblies can be engineered for specified 120 V or 240 V circuits. Resistance, wattage, current, terminals, controls and safety devices must be coordinated with the approved electrical design, installation requirements and applicable codes.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 lg:py-20 bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto text-center mb-12">
+                    <p class="text-sm font-bold tracking-widest text-hexOrange uppercase mb-2">Thermal-spreader modeling</p>
+                    <h2 class="text-3xl font-extrabold text-hexBlue mb-4">Modeling temperature distribution</h2>
+                    <p class="text-gray-700 leading-relaxed">A supplied thermal model compares a bare laminate configuration with an assembly incorporating a 0.1 mm aluminum thermal spreader.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="rounded-xl border border-gray-200 overflow-hidden">
+                        <h3 class="bg-hexBlue text-white font-bold px-6 py-4">Bare laminate — modeled</h3>
+                        <dl class="p-6 grid grid-cols-2 gap-y-4 text-sm">
+                            <dt class="text-gray-600">Mean temperature rise</dt><dd class="font-semibold text-right text-hexBlue">10.2 K</dd>
+                            <dt class="text-gray-600">P95 temperature rise</dt><dd class="font-semibold text-right text-hexBlue">12.2 K</dd>
+                            <dt class="text-gray-600">Peak temperature rise</dt><dd class="font-semibold text-right text-hexBlue">13.9 K</dd>
+                            <dt class="text-gray-600">Predicted mean at 20°C ambient</dt><dd class="font-semibold text-right text-hexBlue">30.2°C</dd>
+                            <dt class="text-gray-600">Predicted peak at 20°C ambient</dt><dd class="font-semibold text-right text-hexBlue">33.9°C</dd>
+                        </dl>
+                    </div>
+                    <div class="rounded-xl border border-gray-200 overflow-hidden">
+                        <h3 class="bg-hexBlue text-white font-bold px-6 py-4">With 0.1 mm aluminum spreader — modeled</h3>
+                        <dl class="p-6 grid grid-cols-2 gap-y-4 text-sm">
+                            <dt class="text-gray-600">Mean temperature rise</dt><dd class="font-semibold text-right text-hexBlue">10.2 K</dd>
+                            <dt class="text-gray-600">P95 temperature rise</dt><dd class="font-semibold text-right text-hexBlue">10.9 K</dd>
+                            <dt class="text-gray-600">Peak temperature rise</dt><dd class="font-semibold text-right text-hexBlue">11.0 K</dd>
+                            <dt class="text-gray-600">Predicted mean at 20°C ambient</dt><dd class="font-semibold text-right text-hexBlue">30.2°C</dd>
+                            <dt class="text-gray-600">Predicted peak at 20°C ambient</dt><dd class="font-semibold text-right text-hexBlue">31.0°C</dd>
+                        </dl>
+                    </div>
+                </div>
+                <p class="mt-6 text-sm text-gray-600 leading-relaxed max-w-5xl mx-auto">The model indicates that an optional thermal-spreader layer may improve modeled surface-temperature uniformity and reduce localized peak temperatures without materially changing modeled mean temperature rise. These figures are modeled estimates, not independently validated physical performance; actual results depend on the complete installed assembly and conditions.</p>
+            </div>
+        </section>
+
+        <section class="py-16 bg-hexBlue text-white">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl font-extrabold mb-4">Engineered for approved building assemblies</h2>
+                <p class="text-gray-200 leading-relaxed mb-8">ThermalSkinIQ is intended for integration into approved floor, wall or ceiling assemblies. Final application depends on project-specific thermal and electrical design, installation requirements, finished-surface limitations and applicable certifications.</p>
+                <a href="install-design.html" class="inline-block bg-hexOrange hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition">Explore Installation Design</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-hexBlue text-white py-12 border-t border-hexOrange">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="col-span-1 md:col-span-2">
+                <h3 class="text-xl font-bold mb-4">ThermalSkinIQ</h3>
+                <p class="text-sm text-gray-300 max-w-sm">Intelligent radiant surfaces powered by InfraWeave™ carbon-fabric technology.</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4 uppercase text-sm tracking-wider">Quick Links</h4>
+                <ul class="space-y-2 text-sm text-gray-300">
+                    <li><a href="technology.html" class="hover:text-hexOrange transition">Technology</a></li>
+                    <li><a href="install-design.html" class="hover:text-hexOrange transition">Install Design</a></li>
+                    <li><a href="install-planning.html" class="hover:text-hexOrange transition">Install Planning</a></li>
+                    <li><a href="learning-center.html" class="hover:text-hexOrange transition">Learning Center</a></li>
+                    <li><a href="partners.html" class="hover:text-hexOrange transition">Partners</a></li>
+                    <li><a href="aethermal.html" class="hover:text-hexOrange transition">AEThermal Solutions</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
