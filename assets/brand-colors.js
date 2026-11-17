@@ -1,8 +1,8 @@
 const thermalSkinIQPalette = {
     paper: { light: '#FFFFFF', DEFAULT: '#FFFFFF', dark: '#F3F6F8' },
-    heatOrange: { light: '#FFE0CC', DEFAULT: '#FC5804', dark: '#993D00' },
-    hotHighlight: { light: '#FFECD1', DEFAULT: '#FCA705', dark: '#996110' },
-    deepHeatOrange: { light: '#FBDBCC', DEFAULT: '#E94A00', dark: '#8C2C00' },
+    heatOrange: { light: '#FCA705', DEFAULT: '#FCA705', dark: '#FCA705' },
+    hotHighlight: { light: '#FCA705', DEFAULT: '#FCA705', dark: '#FCA705' },
+    deepHeatOrange: { light: '#FCA705', DEFAULT: '#FCA705', dark: '#FCA705' },
     coolingCyan: { light: '#CCF2FD', DEFAULT: '#03BAE9', dark: '#007392' },
     coolHighlight: { light: '#D7F7FF', DEFAULT: '#35D8FF', dark: '#1D778C' },
     deepCoolingBlue: { light: '#CCE4FA', DEFAULT: '#0451FB', dark: '#00478B' },
