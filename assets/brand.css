@@ -3,3 +3,24 @@
     outline-offset: 3px;
     box-shadow: 0 0 0 3px #FFFFFF;
 }
+
+/* Home page: Browse by Category icon colors */
+section.py-16.bg-graphite.text-white .grid > a:nth-child(1) > div {
+    background-color: #fca705 !important;
+    color: #252a2e !important;
+}
+
+section.py-16.bg-graphite.text-white .grid > a:nth-child(2) > div {
+    background-color: #35d8ff !important;
+    color: #252a2e !important;
+}
+
+section.py-16.bg-graphite.text-white .grid > a:nth-child(3) > div {
+    background-color: #252a2e !important;
+    color: #ffffff !important;
+}
+
+section.py-16.bg-graphite.text-white .grid > a:nth-child(4) > div {
+    background-color: #b4b6bb !important;
+    color: #252a2e !important;
+}
