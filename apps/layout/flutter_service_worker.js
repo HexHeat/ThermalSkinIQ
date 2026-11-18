@@ -1,14 +1,15 @@
 'use strict';
-const MANIFEST = 'layout-app-manifest';
-const TEMP = 'layout-temp-cache';
-const CACHE_NAME = 'layout-app-cache';
+const MANIFEST = 'flutter-app-manifest';
+const TEMP = 'flutter-temp-cache';
+const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"assets/AssetManifest.bin": "4bb2d72aff6c08d18293a61a80f6821c",
-"assets/AssetManifest.bin.json": "856c09d28c14a2dbe28c9d6c6be3af5d",
+const RESOURCES = {"assets/AssetManifest.bin": "f55dcd9a275756fdfe7a66708f2d3175",
+"assets/AssetManifest.bin.json": "64246d74f82beb7275f07ab8cdb96540",
 "assets/assets/logo.png": "d5abb28cb3bfd4302148ff55fd7131de",
+"assets/assets/thermal-skiniq-logo.png": "dfe338f5d8339d141bbe5d01f94cd79d",
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
 "assets/fonts/MaterialIcons-Regular.otf": "4577cc173c435475ba1e076bbc1a8861",
-"assets/NOTICES": "25d8e8884a6b6c611a05a46b4f13ebf0",
+"assets/NOTICES": "e46072260c74838036d47a3615c78755",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
 "assets/shaders/stretch_effect.frag": "40d68efbbf360632f614c731219e95f0",
 "canvaskit/canvaskit.js": "8331fe38e66b3a898c4f37648aaf7ee2",
@@ -25,15 +26,15 @@ const RESOURCES = {"assets/AssetManifest.bin": "4bb2d72aff6c08d18293a61a80f6821c
 "canvaskit/skwasm_heavy.wasm": "b0be7910760d205ea4e011458df6ee01",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
 "flutter.js": "24bc71911b75b5f8135c949e27a2984e",
-"flutter_bootstrap.js": "5fc5b3c1240f39580f62e3e5f01d5a39",
+"flutter_bootstrap.js": "c872dc1aa2cc76d4b0c8b8b612d68efa",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
-"index.html": "2c93a20088000a9e36c7760b1ff95b68",
-"/": "2c93a20088000a9e36c7760b1ff95b68",
-"main.dart.js": "a232afc84af8587d3fea373acceed5b6",
-"manifest.json": "38da616ae468661f1c8d0f3bdbaf294f",
+"index.html": "0797d52ad2090c1782cdf6254c5fd253",
+"/": "0797d52ad2090c1782cdf6254c5fd253",
+"main.dart.js": "15c737d757bb3040b32a453994864bc3",
+"manifest.json": "d34eb240e0f10fc8185ffaae3cf05e85",
 "version.json": "14c08c8aa7454e9cfd2787e78610f0fe"};
 // The application shell files that are downloaded before a service worker can
 // start.
@@ -79,9 +80,9 @@ self.addEventListener("activate", function(event) {
         return;
       }
       var oldManifest = await manifest.json();
-      var scope = self.registration.scope;
+      var origin = self.location.origin;
       for (var request of await contentCache.keys()) {
-        var key = request.url.substring(scope.length);
+        var key = request.url.substring(origin.length + 1);
         if (key == "") {
           key = "/";
         }
@@ -119,16 +120,13 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== 'GET') {
     return;
   }
-  var scope = self.registration.scope;
-  if (!event.request.url.startsWith(scope)) {
-    return;
-  }
-  var key = event.request.url.substring(scope.length);
+  var origin = self.location.origin;
+  var key = event.request.url.substring(origin.length + 1);
   // Redirect URLs to the index.html
   if (key.indexOf('?v=') != -1) {
     key = key.split('?v=')[0];
   }
-  if (key == '' || key.startsWith('#')) {
+  if (event.request.url == origin || event.request.url.startsWith(origin + '/#') || key == '') {
     key = '/';
   }
   // If the URL is not the RESOURCE list then return to signal that the
@@ -174,7 +172,7 @@ async function downloadOffline() {
   var contentCache = await caches.open(CACHE_NAME);
   var currentContent = {};
   for (var request of await contentCache.keys()) {
-    var key = request.url.substring(self.registration.scope.length);
+    var key = request.url.substring(origin.length + 1);
     if (key == "") {
       key = "/";
     }
@@ -182,7 +180,7 @@ async function downloadOffline() {
   }
   for (var resourceKey of Object.keys(RESOURCES)) {
     if (!currentContent[resourceKey]) {
-      resources.push(new URL(resourceKey == '/' ? './' : resourceKey, self.registration.scope).href);
+      resources.push(resourceKey);
     }
   }
   return contentCache.addAll(resources);
