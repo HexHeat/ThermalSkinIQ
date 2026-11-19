@@ -453,6 +453,8 @@
         .sync-error { color: #b42318; font-weight: bold; }
         #editorScreen[aria-disabled="true"] { opacity: .88; }
 
+        .print-report-heading { display: none; }
+
         @media (max-width: 700px) {
             .portal-account { justify-items: start; }
             .top-nav, .portal-toolbar, .folder-heading { flex-wrap: wrap; }
@@ -464,6 +466,19 @@
                 background-color: white;
                 padding: 0;
             }
+
+            .print-report-heading {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 16px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #ccc;
+                break-after: avoid;
+            }
+
+            .print-report-heading img { width: 144px; height: auto; }
+            .print-report-heading h1 { margin: 0; font-size: 15pt; }
 
             .add-btn, .add-zone-btn, .remove-zone-btn, .delete-btn, .action-bar, .cloud-dashboard, .top-nav, #projectDashboard, #adminDashboard, .live-support-bar {
                 display: none !important;
@@ -581,6 +596,10 @@
         </section>
 
         <main id="editorScreen" hidden>
+        <header class="print-report-heading">
+            <img src="thermal-skiniq-logo.png" alt="">
+            <h1>ThermalSkinIQ Heater Installation Report</h1>
+        </header>
         <section class="project-card">
             <h2>Project Information</h2>
             <div class="grid-2">
