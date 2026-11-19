@@ -495,12 +495,13 @@
         <div class="auth-card">
             <img src="thermal-skiniq-logo.png" alt="ThermalSkinIQ">
             <h1>Heater Install Portal</h1>
-            <p>Please log in to access your projects.</p>
+            <p id="authIntro">Please log in to access your projects.</p>
             <div id="authError" style="color:red; margin-bottom:10px; font-weight:bold; display:none;"></div>
             <input type="email" id="email" placeholder="Email Address">
             <input type="password" id="password" placeholder="Password">
-            <button class="auth-btn" onclick="signIn()">Log In</button>
-            <button class="auth-secondary-btn" onclick="signUp()">Create Account</button>
+            <button id="signInButton" class="auth-btn" onclick="signIn()">Log In</button>
+            <button id="signUpButton" class="auth-secondary-btn" onclick="signUp()">Create Account</button>
+            <button id="continuePortalButton" class="auth-btn" onclick="continueInstallPortal()" hidden>Continue to your projects</button>
         </div>
     </div>
 

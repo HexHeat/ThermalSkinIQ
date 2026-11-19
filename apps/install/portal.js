@@ -25,6 +25,32 @@
     const originalAddZone = window.addZone;
     const originalRemoveZone = window.removeZone;
     const originalPackageProjectData = window.packageProjectData;
+    const embeddedPortal = window.self !== window.top &&
+        new URLSearchParams(window.location.search).get('embedded') === '1';
+
+    function reservePortalTab() {
+        if (!embeddedPortal) return null;
+        const tab = window.open('about:blank', '_blank');
+        if (tab) {
+            tab.document.title = 'Heater Install Portal';
+            tab.document.body.textContent = 'Signing in to the Heater Install Portal...';
+        }
+        return tab;
+    }
+
+    function launchPortalTab(tab) {
+        if (!tab || tab.closed) return false;
+        tab.opener = null;
+        tab.location.replace(new URL('./', window.location.href).href);
+        return true;
+    }
+
+    function showEmbeddedContinue(message) {
+        byId('authIntro').textContent = message;
+        for (const id of ['email', 'password', 'signInButton', 'signUpButton']) byId(id).hidden = true;
+        byId('password').value = '';
+        byId('continuePortalButton').hidden = false;
+    }
 
     function showError(id, message) {
         const element = byId(id);
@@ -773,17 +799,53 @@
 
     window.signIn = async function () {
         showError('authError', '');
-        const { data, error } = await _supabase.auth.signInWithPassword({
-            email: byId('email').value,
-            password: byId('password').value,
-        });
-        if (error) return window.showAuthError(error.message);
+        const button = byId('signInButton');
+        if (button.disabled) return;
+        const tab = reservePortalTab();
+        button.disabled = true;
         try {
+            const { data, error } = await _supabase.auth.signInWithPassword({
+                email: byId('email').value,
+                password: byId('password').value,
+            });
+            if (error) throw error;
+            if (launchPortalTab(tab)) {
+                showEmbeddedContinue('The Install Portal opened in a separate tab.');
+                return;
+            }
             await loadPortal(data.user);
+            if (embeddedPortal) alert('A new tab could not open. Continuing here instead.');
         } catch (error) {
+            if (tab && !tab.closed) tab.close();
             window.showAuthError(`Could not finish sign-in: ${error.message}`);
+        } finally {
+            button.disabled = false;
         }
     };
+
+    window.continueInstallPortal = async function () {
+        if (!embeddedPortal) return;
+        showError('authError', '');
+        if (launchPortalTab(reservePortalTab())) return;
+        try {
+            const { data, error } = await _supabase.auth.getSession();
+            if (error) throw error;
+            if (!data.session) {
+                showEmbeddedCredentials();
+                return;
+            }
+            await loadPortal(data.session.user);
+            alert('A new tab could not open. Continuing here instead.');
+        } catch (error) {
+            window.showAuthError(`Could not initialize the portal: ${error.message}`);
+        }
+    };
+
+    function showEmbeddedCredentials() {
+        byId('authIntro').textContent = 'Log in to open your projects in a separate tab.';
+        for (const id of ['email', 'password', 'signInButton', 'signUpButton']) byId(id).hidden = false;
+        byId('continuePortalButton').hidden = true;
+    }
 
     window.signOut = async function () {
         if (state.support && state.syncBusy) {
@@ -816,6 +878,7 @@
         byId('email').value = '';
         byId('password').value = '';
         byId('authScreen').hidden = false;
+        if (embeddedPortal) showEmbeddedCredentials();
         byId('appScreen').hidden = true;
         byId('appScreen').style.display = 'none';
     };
@@ -839,12 +902,17 @@
         const { data, error } = await _supabase.auth.getSession();
         if (error) return window.showAuthError(`Could not check your sign-in: ${error.message}`);
         if (data.session) {
+            if (embeddedPortal) {
+                showEmbeddedContinue('You are signed in. Continue to open the Install Portal in a separate tab.');
+                return;
+            }
             try {
                 await loadPortal(data.session.user);
             } catch (error) {
                 window.showAuthError(`Could not initialize the portal: ${error.message}`);
             }
         } else {
+            if (embeddedPortal) showEmbeddedCredentials();
             byId('appScreen').hidden = true;
             byId('authScreen').hidden = false;
         }
