@@ -42,9 +42,8 @@
         byId('editorScreen').hidden = view !== 'editor';
         byId('myProjectsButton').hidden = view === 'projects';
         byId('adminDashboardButton').hidden = !state.isAdmin || view === 'admin';
-        byId('portalTitle').textContent = view === 'admin'
-            ? 'Admin Dashboard'
-            : view === 'editor' ? 'Heater Install Portal' : 'My Install Projects';
+        byId('portalTitle').textContent = view === 'projects'
+            ? 'My Install Projects' : 'Heater Install Portal';
     }
 
     function stableStringify(value) {
@@ -262,15 +261,16 @@
     function makeDirectoryRow(user, isAdmin) {
         const item = document.createElement('li');
         const row = document.createElement('div');
-        row.className = 'support-row';
+        row.className = 'support-row admin-directory-row';
         const label = document.createElement('span');
+        label.className = 'admin-account-label';
         label.textContent = user.email || '(No email)';
         row.append(label);
         if (isAdmin) {
             const status = document.createElement('span');
-            status.textContent = user.is_manager
-                ? 'Can assist users and grant admin access'
-                : 'Can assist users';
+            status.className = 'admin-badge';
+            status.textContent = user.is_manager ? 'Admin manager' : 'Admin';
+            if (user.is_manager) status.title = 'Can grant admin access';
             row.append(status);
         } else if (state.canGrantAdmin) {
             addButton(row, 'Grant Admin', async () => {
@@ -295,19 +295,28 @@
     function renderHelpRequests() {
         const root = byId('installHelpRequests');
         root.replaceChildren();
-        if (!state.sessions.length) {
-            root.textContent = 'No open install help requests.';
-            return;
-        }
+        byId('installHelpRequestsEmpty').hidden = state.sessions.length > 0;
         for (const session of state.sessions) {
             const row = document.createElement('div');
-            row.className = 'support-row portal-panel';
-            const text = document.createElement('span');
-            text.textContent = `${session.project_name || 'Install Project'} — ${session.email} — ${session.status}`;
-            row.append(text);
-            addButton(row, session.owner_id === currentUserId ? 'Resume' : 'Join', () => {
+            row.className = 'support-row admin-request';
+            const detail = document.createElement('div');
+            detail.className = 'admin-request-detail';
+            const title = document.createElement('strong');
+            title.textContent = session.project_name || 'Install Project';
+            const email = document.createElement('span');
+            email.className = 'admin-muted';
+            email.textContent = session.email || '(No email)';
+            detail.append(title, email);
+            const actions = document.createElement('div');
+            actions.className = 'admin-request-actions';
+            const badge = document.createElement('span');
+            badge.className = 'admin-badge';
+            badge.textContent = session.status === 'waiting' ? 'Waiting' : 'Active';
+            actions.append(badge);
+            addButton(actions, session.owner_id === currentUserId ? 'Resume' : 'Join', () => {
                 openSupportSession(session.id, session.owner_id === currentUserId ? 'read' : 'join');
             });
+            row.append(detail, actions);
             root.append(row);
         }
     }
@@ -328,11 +337,19 @@
         admins.replaceChildren();
         users.replaceChildren();
         for (const user of directory.admins || []) admins.append(makeDirectoryRow(user, true));
-        if (!admins.children.length) admins.textContent = 'No administrators found.';
         for (const user of directory.users || []) users.append(makeDirectoryRow(user, false));
-        if (!users.children.length) users.textContent = 'No users found.';
-        byId('previousUsersButton').disabled = state.directoryOffset === 0;
-        byId('nextUsersButton').disabled = (directory.users || []).length < 20;
+        const adminsEmpty = byId('adminDirectoryEmpty');
+        adminsEmpty.textContent = search ? 'No matching administrators.' : 'No administrators yet.';
+        adminsEmpty.hidden = admins.children.length > 0;
+        const usersEmpty = byId('userDirectoryEmpty');
+        usersEmpty.textContent = state.directoryOffset > 0 ? 'No more users.'
+            : search ? 'No matching users.' : 'No regular users yet.';
+        usersEmpty.hidden = users.children.length > 0;
+        const previous = byId('previousUsersButton');
+        const next = byId('nextUsersButton');
+        previous.disabled = state.directoryOffset === 0;
+        next.disabled = users.children.length < 20;
+        byId('userPagination').hidden = previous.disabled && next.disabled;
         state.sessions = sessionsResult.data || [];
         renderHelpRequests();
     }

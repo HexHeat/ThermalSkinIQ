@@ -383,9 +383,34 @@
             margin: 16px 0;
         }
         .portal-panel h3 { margin-top: 0; }
-        .portal-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .portal-brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+        .portal-brand img { width: min(36vw, 180px); height: auto; }
+        .portal-brand h2 { margin: 0; font-size: 1rem; }
+        .portal-account { display: grid; justify-items: end; gap: 6px; min-width: 0; }
+        #userEmailDisplay { color: #526170; font-size: .85rem; overflow-wrap: anywhere; }
+        .portal-nav-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .portal-nav-actions button { padding: 8px 12px; }
+        .admin-heading { margin: 24px 0 0; }
+        .admin-search { max-width: 360px; margin: 16px 0; }
+        .admin-section h2 { margin: 0 0 8px; font-size: 1.15rem; }
+        .admin-section p { margin: 0 0 8px; }
         .portal-list { margin: 0; padding: 0; list-style: none; }
-        .portal-list li { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .portal-list li, .admin-request { padding: 10px 0; }
+        .portal-list li + li, .admin-request + .admin-request { border-top: 1px solid #e6eaee; }
+        .admin-directory-row, .admin-request { flex-wrap: wrap; }
+        .admin-account-label, .admin-request-detail { min-width: 0; overflow-wrap: anywhere; }
+        .admin-request-detail { display: grid; gap: 4px; }
+        .admin-request-actions { display: flex; align-items: center; gap: 10px; }
+        .admin-badge {
+            background: #eaf2fa;
+            color: #174e7a;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: .8rem;
+            font-weight: bold;
+        }
+        .admin-muted { color: #526170; font-size: .9rem; }
+        .admin-pagination { display: flex; gap: 8px; margin-top: 10px; }
         .live-support-bar {
             position: sticky;
             top: 0;
@@ -401,7 +426,7 @@
         #editorScreen[aria-disabled="true"] { opacity: .88; }
 
         @media (max-width: 700px) {
-            .portal-columns { grid-template-columns: 1fr; }
+            .portal-account { justify-items: start; }
             .top-nav, .portal-toolbar, .folder-heading { flex-wrap: wrap; }
             .grid, .materials-grid, .summary-grid { grid-template-columns: 1fr 1fr; }
         }
@@ -452,16 +477,18 @@
     </div>
 
     <div id="appScreen" class="container">
-        <div class="top-nav">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <img src="thermal-skiniq-logo.png" alt="ThermalSkinIQ" style="max-height: 40px;">
-                <h2 id="portalTitle" style="margin: 0;">Heater Install Portal</h2>
+        <div class="top-nav portal-toolbar">
+            <div class="portal-brand">
+                <img src="thermal-skiniq-logo.png" alt="ThermalSkinIQ">
+                <h2 id="portalTitle">Heater Install Portal</h2>
             </div>
-            <div>
-                <span id="userEmailDisplay" style="margin-right:15px; font-weight:bold; color:#0056b3;"></span>
-                <button id="myProjectsButton" class="portal-button secondary" onclick="backToProjects()" hidden>My Projects</button>
-                <button id="adminDashboardButton" class="portal-button" onclick="showAdminDashboard()" hidden>Admin Dashboard</button>
-                <button class="logout-btn" onclick="signOut()">Log Out</button>
+            <div class="portal-account">
+                <span id="userEmailDisplay"></span>
+                <div class="portal-nav-actions">
+                    <button id="myProjectsButton" class="portal-button secondary" onclick="backToProjects()" hidden>My Projects</button>
+                    <button id="adminDashboardButton" class="portal-button" onclick="showAdminDashboard()" hidden>Admin Dashboard</button>
+                    <button class="logout-btn" onclick="signOut()">Log Out</button>
+                </div>
             </div>
         </div>
 
@@ -495,27 +522,30 @@
         </section>
 
         <section id="adminDashboard" hidden>
-            <h2>Admin Dashboard</h2>
-            <p>A user must request help from a project before an admin can open it. Only that project is shared. One person edits at a time; the other watches live.</p>
+            <h1 class="admin-heading">Admin Dashboard</h1>
             <div id="adminDashboardError" class="sync-error" role="alert"></div>
-            <label for="directorySearch">Search users by email</label>
-            <input id="directorySearch" type="search" placeholder="Search users by email">
-            <div class="portal-columns">
-                <section class="portal-panel">
-                    <h3>Administrators</h3>
-                    <ul id="adminDirectory" class="portal-list"></ul>
-                </section>
-                <section class="portal-panel">
-                    <h3>Users</h3>
-                    <ul id="userDirectory" class="portal-list"></ul>
-                    <div class="portal-toolbar">
-                        <button id="previousUsersButton" class="portal-button secondary" onclick="changeUserPage(-1)" disabled>Previous</button>
-                        <button id="nextUsersButton" class="portal-button secondary" onclick="changeUserPage(1)" disabled>Next</button>
-                    </div>
-                </section>
+            <div class="admin-search">
+                <label for="directorySearch">Search accounts by email</label>
+                <input id="directorySearch" type="search" placeholder="Enter an email address">
             </div>
-            <section class="portal-panel">
-                <h3>Approved Install Help Requests</h3>
+            <section class="portal-panel admin-section">
+                <h2>Administrators</h2>
+                <p id="adminDirectoryEmpty" class="admin-muted" hidden></p>
+                <ul id="adminDirectory" class="portal-list"></ul>
+            </section>
+            <section class="portal-panel admin-section">
+                <h2>Users</h2>
+                <p id="userDirectoryEmpty" class="admin-muted" hidden></p>
+                <ul id="userDirectory" class="portal-list"></ul>
+                <div id="userPagination" class="admin-pagination" hidden>
+                    <button id="previousUsersButton" class="portal-button secondary" onclick="changeUserPage(-1)" disabled>Previous</button>
+                    <button id="nextUsersButton" class="portal-button secondary" onclick="changeUserPage(1)" disabled>Next</button>
+                </div>
+            </section>
+            <section class="portal-panel admin-section">
+                <h2>Live Help Requests</h2>
+                <p class="admin-muted">Only projects shared by their owners appear here.</p>
+                <p id="installHelpRequestsEmpty" class="admin-muted" hidden>No open install help requests.</p>
                 <div id="installHelpRequests"></div>
             </section>
         </section>
