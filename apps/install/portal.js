@@ -50,6 +50,7 @@
         for (const id of ['email', 'password', 'signInButton', 'signUpButton']) byId(id).hidden = true;
         byId('password').value = '';
         byId('continuePortalButton').hidden = false;
+        byId('embeddedSignOutButton').hidden = false;
     }
 
     function showError(id, message) {
@@ -775,6 +776,7 @@
         currentUserId = user.id;
         byId('userEmailDisplay').textContent = `Logged in as: ${user.email || ''}`;
         const { data: isAdmin, error } = await rpc('support_is_admin');
+        if (state.user !== user) return;
         if (error) throw error;
         state.isAdmin = isAdmin === true;
         byId('authScreen').hidden = true;
@@ -826,18 +828,26 @@
     window.continueInstallPortal = async function () {
         if (!embeddedPortal) return;
         showError('authError', '');
-        if (launchPortalTab(reservePortalTab())) return;
+        const button = byId('continuePortalButton');
+        if (button.disabled) return;
+        button.disabled = true;
+        const tab = reservePortalTab();
         try {
             const { data, error } = await _supabase.auth.getSession();
             if (error) throw error;
-            if (!data.session) {
+            if (!data.session || button.hidden) {
+                if (tab && !tab.closed) tab.close();
                 showEmbeddedCredentials();
                 return;
             }
+            if (launchPortalTab(tab)) return;
             await loadPortal(data.session.user);
             alert('A new tab could not open. Continuing here instead.');
         } catch (error) {
+            if (tab && !tab.closed) tab.close();
             window.showAuthError(`Could not initialize the portal: ${error.message}`);
+        } finally {
+            button.disabled = false;
         }
     };
 
@@ -845,11 +855,31 @@
         byId('authIntro').textContent = 'Log in to open your projects in a separate tab.';
         for (const id of ['email', 'password', 'signInButton', 'signUpButton']) byId(id).hidden = false;
         byId('continuePortalButton').hidden = true;
+        byId('embeddedSignOutButton').hidden = true;
+    }
+
+    function showSignedOut() {
+        clearTimeout(state.pollTimer);
+        clearTimeout(state.searchTimer);
+        state.user = null;
+        state.support = null;
+        state.isAdmin = false;
+        state.isOwner = false;
+        state.editorAcknowledged = '';
+        currentUserId = null;
+        activeProjectId = null;
+        byId('email').value = '';
+        byId('password').value = '';
+        showError('authError', '');
+        byId('authScreen').hidden = false;
+        if (embeddedPortal) showEmbeddedCredentials();
+        byId('appScreen').hidden = true;
+        byId('appScreen').style.display = 'none';
     }
 
     window.signOut = async function () {
-        if (state.support && state.syncBusy) {
-            alert('Live help is synchronizing. Please try again in a moment.');
+        if (state.syncBusy) {
+            if (state.support) alert('Live help is synchronizing. Please try again in a moment.');
             return;
         }
         if (state.support && !confirm('Sign out of live help? Acknowledged changes remain saved; the owner can resume and end access.')) {
@@ -862,26 +892,21 @@
         }
         clearTimeout(state.pollTimer);
         state.syncBusy = true;
-        const { error } = await _supabase.auth.signOut();
-        state.syncBusy = false;
-        if (error) {
+        try {
+            const { error } = await _supabase.auth.signOut({ scope: 'local' });
+            if (error) throw error;
+            showSignedOut();
+        } catch (error) {
             alert(`Could not sign out: ${error.message}`);
+        } finally {
+            state.syncBusy = false;
             scheduleSupportPoll();
-            return;
         }
-        state.user = null;
-        state.support = null;
-        state.isAdmin = false;
-        state.isOwner = false;
-        currentUserId = null;
-        activeProjectId = null;
-        byId('email').value = '';
-        byId('password').value = '';
-        byId('authScreen').hidden = false;
-        if (embeddedPortal) showEmbeddedCredentials();
-        byId('appScreen').hidden = true;
-        byId('appScreen').style.display = 'none';
     };
+
+    _supabase.auth.onAuthStateChange(event => {
+        if (event === 'SIGNED_OUT') showSignedOut();
+    });
 
     byId('directorySearch').addEventListener('input', () => {
         clearTimeout(state.searchTimer);
