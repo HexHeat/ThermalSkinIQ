@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HexHeat Installation App</title>
+    <title>ThermalSkinIQ Heater Install Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -342,13 +342,77 @@
             line-height: 1.6;
         }
 
+        [hidden] { display: none !important; }
+        .portal-button {
+            border: 0;
+            border-radius: 5px;
+            padding: 10px 15px;
+            color: white;
+            background: #0056b3;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .portal-button.secondary { background: #6c757d; }
+        .portal-button.success { background: #28a745; }
+        .portal-button.danger { background: #b42318; }
+        .portal-button:disabled { opacity: .55; cursor: not-allowed; }
+        .portal-toolbar, .folder-heading, .room-row, .support-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .project-folder {
+            background: white;
+            border: 1px solid #d5dce2;
+            border-radius: 8px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        .folder-heading { padding: 16px; }
+        .folder-heading h3 { margin: 0; color: #0056b3; }
+        .folder-title-area { display: flex; flex-direction: column; gap: 4px; }
+        .folder-rooms { border-top: 1px solid #e6eaee; padding: 8px 16px; }
+        .room-row { padding: 8px 0; }
+        .room-row + .room-row { border-top: 1px solid #eee; }
+        .portal-panel {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #d5dce2;
+            padding: 18px;
+            margin: 16px 0;
+        }
+        .portal-panel h3 { margin-top: 0; }
+        .portal-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .portal-list { margin: 0; padding: 0; list-style: none; }
+        .portal-list li { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .live-support-bar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            padding: 12px 16px;
+            background: #e2e8f0;
+            border: 1px solid #cbd3da;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .live-support-status { margin-right: auto; font-weight: bold; }
+        .sync-error { color: #b42318; font-weight: bold; }
+        #editorScreen[aria-disabled="true"] { opacity: .88; }
+
+        @media (max-width: 700px) {
+            .portal-columns { grid-template-columns: 1fr; }
+            .top-nav, .portal-toolbar, .folder-heading { flex-wrap: wrap; }
+            .grid, .materials-grid, .summary-grid { grid-template-columns: 1fr 1fr; }
+        }
+
         @media print {
             body {
                 background-color: white;
                 padding: 0;
             }
 
-            .add-btn, .add-zone-btn, .remove-zone-btn, .delete-btn, .action-bar, .cloud-dashboard, .top-nav {
+            .add-btn, .add-zone-btn, .remove-zone-btn, .delete-btn, .action-bar, .cloud-dashboard, .top-nav, #projectDashboard, #adminDashboard, .live-support-bar {
                 display: none !important;
             }
 
@@ -376,8 +440,8 @@
 
     <div id="authScreen" class="container">
         <div class="auth-card">
-            <img src="logo.png" alt="HexHeat" style="max-height: 70px; margin-bottom: 15px;">
-            <h1 style="color:#0056b3; margin-top:0;">HexHeat Portal</h1>
+            <img src="thermal-skiniq-logo.png" alt="ThermalSkinIQ" style="max-height: 70px; margin-bottom: 15px;">
+            <h1 style="color:#0056b3; margin-top:0;">Heater Install Portal</h1>
             <p style="color:#666; margin-bottom: 25px;">Please log in to access your projects.</p>
             <div id="authError" style="color:red; margin-bottom:10px; font-weight:bold; display:none;"></div>
             <input type="email" id="email" placeholder="Email Address">
@@ -390,26 +454,73 @@
     <div id="appScreen" class="container">
         <div class="top-nav">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <img src="logo.png" alt="HexHeat" style="max-height: 40px;">
-                <h2 style="margin: 0;">HexHeat Installation App</h2>
+                <img src="thermal-skiniq-logo.png" alt="ThermalSkinIQ" style="max-height: 40px;">
+                <h2 id="portalTitle" style="margin: 0;">Heater Install Portal</h2>
             </div>
             <div>
                 <span id="userEmailDisplay" style="margin-right:15px; font-weight:bold; color:#0056b3;"></span>
+                <button id="myProjectsButton" class="portal-button secondary" onclick="backToProjects()" hidden>My Projects</button>
+                <button id="adminDashboardButton" class="portal-button" onclick="showAdminDashboard()" hidden>Admin Dashboard</button>
                 <button class="logout-btn" onclick="signOut()">Log Out</button>
             </div>
         </div>
 
-        <div class="cloud-dashboard">
-            <div style="flex:1;">
-                <label>Load Existing Project from Cloud:</label>
-                <select id="projectSelector">
-                    <option value="">-- Select a Project --</option>
-                </select>
+        <div id="liveSupportBar" class="live-support-bar" hidden>
+            <div class="portal-toolbar">
+                <span id="liveSupportStatus" class="live-support-status"></span>
+                <label>Room
+                    <select id="liveSupportRoom" aria-label="Shared room"></select>
+                </label>
+                <button id="passControlButton" class="portal-button" onclick="passInstallControl()" hidden>Pass Control</button>
+                <button id="reclaimControlButton" class="portal-button secondary" onclick="reclaimInstallControl()" hidden>Take Back Control</button>
+                <button id="reconnectSupportButton" class="portal-button" onclick="reconnectInstallSupport()" hidden>Reconnect</button>
+                <button id="endSupportButton" class="portal-button danger" onclick="endInstallSupport()" hidden>End Help &amp; Save</button>
             </div>
-            <button class="load-btn" onclick="loadProjectFromCloud()" style="margin-top: 18px;">Load Project</button>
-            <button class="load-btn" onclick="startNewProject()" style="margin-top: 18px; background-color:#28a745; color:white;">Start Blank Project</button>
+            <div id="liveSupportError" class="sync-error" role="alert"></div>
         </div>
 
+        <section id="projectDashboard">
+            <div class="portal-toolbar">
+                <div>
+                    <h2 id="dashboardHeading">My Install Projects</h2>
+                    <p id="dashboardDescription">Each project is a folder for its rooms and heater layouts.</p>
+                </div>
+                <div>
+                    <button class="portal-button success" onclick="startNewProject()">+ Start New Project</button>
+                    <button id="resumeHelpButton" class="portal-button" onclick="resumeInstallSupport()" hidden>Resume Live Help</button>
+                </div>
+            </div>
+            <div id="projectDashboardError" class="sync-error" role="alert"></div>
+            <div id="projectFolders"></div>
+        </section>
+
+        <section id="adminDashboard" hidden>
+            <h2>Admin Dashboard</h2>
+            <p>A user must request help from a project before an admin can open it. Only that project is shared. One person edits at a time; the other watches live.</p>
+            <div id="adminDashboardError" class="sync-error" role="alert"></div>
+            <label for="directorySearch">Search users by email</label>
+            <input id="directorySearch" type="search" placeholder="Search users by email">
+            <div class="portal-columns">
+                <section class="portal-panel">
+                    <h3>Administrators</h3>
+                    <ul id="adminDirectory" class="portal-list"></ul>
+                </section>
+                <section class="portal-panel">
+                    <h3>Users</h3>
+                    <ul id="userDirectory" class="portal-list"></ul>
+                    <div class="portal-toolbar">
+                        <button id="previousUsersButton" class="portal-button secondary" onclick="changeUserPage(-1)" disabled>Previous</button>
+                        <button id="nextUsersButton" class="portal-button secondary" onclick="changeUserPage(1)" disabled>Next</button>
+                    </div>
+                </section>
+            </div>
+            <section class="portal-panel">
+                <h3>Approved Install Help Requests</h3>
+                <div id="installHelpRequests"></div>
+            </section>
+        </section>
+
+        <main id="editorScreen" hidden>
         <section class="project-card">
             <h2>Project Information</h2>
             <div class="grid-2">
@@ -458,14 +569,15 @@
             <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
             <button class="save-btn" onclick="saveProjectToCloud()" id="saveCloudBtn">Save Project to Cloud</button>
         </div>
+        </main>
     </div>
 
     <script>
         // ==========================================
         // 1. SUPABASE DATABASE CONNECTION
         // ==========================================
-        const SUPABASE_URL = 'https://icthxpjfaqzmaadlaqwz.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljdGh4cGpmYXF6bWFhZGxhcXd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxNzMzMDUsImV4cCI6MjA4Nzc0OTMwNX0.__AhjbgVpt7jaGbig1tZ4biOBXlIoQH2FADslKmUaTc';
+        const SUPABASE_URL = 'https://eqfiyqeefmnyhfwjodpk.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxZml5cWVlZm1ueWhmd2pvZHBrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4OTgxMDksImV4cCI6MjA4NzQ3NDEwOX0.tsz5iJQuE32Jh8S3tSytUExYHB6eFD5f9KMzp_gaq_o';
 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentUserId = null;
@@ -1037,5 +1149,6 @@
             }
         }
     </script>
+    <script src="portal.js"></script>
 </body>
 </html>
