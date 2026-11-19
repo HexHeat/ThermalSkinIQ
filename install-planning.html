@@ -87,7 +87,7 @@
                 <p class="mt-1 text-gray-700">Create an account in either the Heater Layout or Heater Install app, then use the same email and password to sign in to the other. No need to create a second account.</p>
             </div>
             
-            <div class="grid items-center gap-6 lg:grid-cols-[2fr_3fr] lg:gap-10 mb-8">
+            <div class="grid items-center gap-6 lg:grid-cols-[2fr_3fr] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.65fr)_420px]">
                 <div>
                     <h2 id="heater-layout-heading" class="text-2xl sm:text-3xl font-extrabold text-hexBlue mb-4">Step 1: Heater Layout Application</h2>
                     <p class="text-lg text-gray-600">
@@ -102,10 +102,9 @@
                     </figcaption>
                     <p class="mt-2 text-sm text-gray-600">For illustration only. Follow the installation instructions for approved clearances and any placement beneath furniture.</p>
                 </figure>
-            </div>
-            
-            <div class="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                <iframe src="apps/layout/?embedded=1" class="block w-full h-[850px] border-none" title="Heater Layout App"></iframe>
+                <div class="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden lg:col-span-2 xl:col-span-1">
+                    <iframe src="apps/layout/?embedded=1" class="block w-full h-[850px] xl:h-[640px] border-none" title="Heater Layout App"></iframe>
+                </div>
             </div>
             
         </div>
