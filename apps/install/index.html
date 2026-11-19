@@ -1022,11 +1022,11 @@
                     <td>
                         <select class="heater-select" onchange="calculateZoneTotals(this)">
                             <option value="0|0|0|0">Select a Heater...</option>
-                            <optgroup label="115V System Heaters">
-                                <option value="57|0.5|115|6">115v 2x3 (6 sqft, 57W, 0.5A)</option>
-                                <option value="98|0.86|115|10">115v 2x5 (10 sqft, 98W, 0.86A)</option>
-                                <option value="120|1.04|115|12">115v 3x4 (12 sqft, 120W, 1.04A)</option>
-                                <option value="183|1.59|115|18">115v 3x6 (18 sqft, 183W, 1.59A)</option>
+                            <optgroup label="120V System Heaters">
+                                <option value="57|0.5|115|6">120V 2x3 (6 sqft, 57W, 0.5A)</option>
+                                <option value="98|0.86|115|10">120V 2x5 (10 sqft, 98W, 0.86A)</option>
+                                <option value="120|1.04|115|12">120V 3x4 (12 sqft, 120W, 1.04A)</option>
+                                <option value="183|1.59|115|18">120V 3x6 (18 sqft, 183W, 1.59A)</option>
                             </optgroup>
                             <optgroup label="220V System Heaters">
                                 <option value="78|0.35|220|8">220v 2x4 (8 sqft, 78W, 0.35A)</option>
@@ -1109,7 +1109,7 @@
                     const voltagesArr = Array.from(circuit.voltages);
 
                     if (voltagesArr.includes(115) && voltagesArr.includes(220)) {
-                        allWarnings.push(`CRITICAL: Circuit ${i} contains both 115V and 220V heaters!`);
+                        allWarnings.push(`CRITICAL: Circuit ${i} contains both 120V and 220V heaters!`);
                         errorClass = 'error';
                     } else {
                         const circuitVolts = voltagesArr[0] || 115;
@@ -1121,7 +1121,8 @@
 
                     const card = document.createElement('div');
                     card.className = `circuit-card ${errorClass}`;
-                    card.innerHTML = `<h4 style="margin:0 0 10px 0;">Circuit ${i}</h4><p style="margin:3px 0; font-size:0.9em;">Voltage: <strong>${voltagesArr.length === 1 ? voltagesArr[0] + 'V' : 'MIXED'}</strong></p><p style="margin:3px 0; font-size:0.9em;">Total Watts: <strong>${circuit.watts.toFixed(2)} W</strong></p><p style="margin:3px 0; font-size:0.9em;">Total Amps: <strong>${circuit.amps.toFixed(2)} A</strong></p>`;
+                    const displayVoltage = voltagesArr[0] === 115 ? 120 : voltagesArr[0];
+                    card.innerHTML = `<h4 style="margin:0 0 10px 0;">Circuit ${i}</h4><p style="margin:3px 0; font-size:0.9em;">Voltage: <strong>${voltagesArr.length === 1 ? displayVoltage + 'V' : 'MIXED'}</strong></p><p style="margin:3px 0; font-size:0.9em;">Total Watts: <strong>${circuit.watts.toFixed(2)} W</strong></p><p style="margin:3px 0; font-size:0.9em;">Total Amps: <strong>${circuit.amps.toFixed(2)} A</strong></p>`;
                     summaryContainer.appendChild(card);
                 }
             }
