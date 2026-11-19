@@ -569,6 +569,7 @@
         <section id="adminDashboard" hidden>
             <h1 class="admin-heading">Admin Dashboard</h1>
             <div id="adminDashboardError" class="sync-error" role="alert"></div>
+            <p id="supportCoverageStatus" role="status"></p>
             <div class="admin-search">
                 <label for="directorySearch">Search accounts by email</label>
                 <input id="directorySearch" type="search" placeholder="Enter an email address">
@@ -679,7 +680,17 @@
         async function signUp() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const { data, error } = await _supabase.auth.signUp({ email, password });
+            let cell;
+            try {
+                cell = window.askForSupportCell();
+            } catch (error) {
+                showAuthError(error.message);
+                return;
+            }
+            if (cell === null) return;
+            const { error } = await _supabase.auth.signUp({
+                email, password, options: { data: { support_cell: cell } },
+            });
 
             if (error) {
                 showAuthError(error.message);

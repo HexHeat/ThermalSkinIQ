@@ -62,6 +62,16 @@
         return _supabase.rpc(name, parameters || {});
     }
 
+    window.askForSupportCell = function () {
+        const answer = prompt('Enter your cell number with area code. Signed-in support administrators can use it to call you about live help.');
+        if (answer === null) return null;
+        const cell = answer.trim().replace(/[^0-9+]/g, '');
+        if (!/^[+0-9 ().-]{7,40}$/.test(answer.trim()) || !/^\+?[0-9]{7,15}$/.test(cell)) {
+            throw new Error('Enter a valid cell number with area code.');
+        }
+        return cell;
+    };
+
     function setView(view) {
         state.view = view;
         byId('projectDashboard').hidden = view !== 'projects';
@@ -291,7 +301,7 @@
         row.className = 'support-row admin-directory-row';
         const label = document.createElement('span');
         label.className = 'admin-account-label';
-        label.textContent = user.email || '(No email)';
+        label.textContent = `${user.email || '(No email)'} | Cell: ${user.cell || 'Not provided'}`;
         row.append(label);
         if (isAdmin) {
             const status = document.createElement('span');
@@ -299,6 +309,25 @@
             status.textContent = user.is_manager ? 'Admin manager' : 'Admin';
             if (user.is_manager) status.title = 'Can grant admin access';
             row.append(status);
+            if (user.coverage) {
+                const coverage = document.createElement('span');
+                coverage.textContent = user.coverage === 'primary' ? 'On call' : 'Backup';
+                row.append(coverage);
+            }
+            if (state.canGrantAdmin) {
+                for (const [slot, label] of [['primary', 'Set on call'], ['backup', 'Set backup']]) {
+                    if (user.coverage === slot) continue;
+                    addButton(row, label, async () => {
+                        try {
+                            const { error } = await rpc('support_set_coverage', { p_slot: slot, p_user_id: user.user_id });
+                            if (error) throw error;
+                            await loadAdminDashboard();
+                        } catch (error) {
+                            showError('adminDashboardError', `Could not assign coverage: ${error.message}`);
+                        }
+                    }, 'portal-button secondary');
+                }
+            }
         } else if (state.canGrantAdmin) {
             addButton(row, 'Grant Admin', async () => {
                 if (!confirm(
@@ -352,13 +381,15 @@
         showError('adminDashboardError', '');
         const search = byId('directorySearch').value.trim();
         const [directoryResult, sessionsResult] = await Promise.all([
-            rpc('support_directory_v2', { p_search: search, p_offset: state.directoryOffset }),
+            rpc('support_contact_directory', { p_search: search, p_offset: state.directoryOffset }),
             rpc('install_support_list'),
         ]);
         if (directoryResult.error) throw directoryResult.error;
         if (sessionsResult.error) throw sessionsResult.error;
         const directory = directoryResult.data;
         state.canGrantAdmin = directory.can_grant_admin === true;
+        showError('supportCoverageStatus', directory.coverage_missing
+            ? 'Assign an on-call administrator and backup to complete coverage.' : '');
         const admins = byId('adminDirectory');
         const users = byId('userDirectory');
         admins.replaceChildren();
@@ -570,6 +601,14 @@
         );
         if (!consent) return;
         try {
+            const contact = await rpc('support_cell');
+            if (contact.error) throw contact.error;
+            if (!contact.data) {
+                const cell = window.askForSupportCell();
+                if (cell === null) return;
+                const saved = await rpc('support_set_cell', { p_cell: cell });
+                if (saved.error) throw saved.error;
+            }
             const { data, error } = await rpc('install_support_start', {
                 p_project_id: projectId,
                 p_zone_id: roomId,
