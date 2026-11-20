@@ -23,6 +23,7 @@
         demoCompleted: false,
     };
     let installDemo;
+    const liveHelpLockedMessage = 'Live help is locked until you complete the guided Install demo while signed in.';
 
     const byId = id => document.getElementById(id);
     const makeId = () => crypto.randomUUID();
@@ -70,9 +71,11 @@
 
     function updateLiveHelpGate() {
         for (const button of document.querySelectorAll('.request-live-help')) {
-            button.disabled = !state.demoCompleted;
+            button.setAttribute('aria-disabled', String(!state.demoCompleted));
             button.title = state.demoCompleted ? 'Request Live Help'
-                : 'Complete the guided Install demo while signed in to unlock live help.';
+                : liveHelpLockedMessage;
+            if (state.demoCompleted) button.removeAttribute('aria-describedby');
+            else button.setAttribute('aria-describedby', 'liveHelpDemoRequirement');
         }
         byId('liveHelpDemoRequirement').hidden = state.demoCompleted;
     }
@@ -812,7 +815,8 @@
 
     async function requestLiveHelp(projectId, zoneId) {
         if (!state.demoCompleted) {
-            showError('projectDashboardError', 'Complete the guided Install demo while signed in to unlock live help.');
+            showError('projectDashboardError', liveHelpLockedMessage);
+            byId('projectDashboardError').scrollIntoView({ block: 'nearest' });
             return;
         }
         const project = state.projects.find(item => item.id === projectId);
