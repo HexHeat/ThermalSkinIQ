@@ -27,6 +27,7 @@
     const originalPackageProjectData = window.packageProjectData;
     const embeddedPortal = window.self !== window.top &&
         new URLSearchParams(window.location.search).get('embedded') === '1';
+    let layoutImportMetadata = null;
 
     function reservePortalTab() {
         if (!embeddedPortal) return null;
@@ -99,6 +100,15 @@
             ? zone.customRoomType : zone.roomType || 'Room';
     }
 
+    function numberedZoneTitle(zone, index) {
+        return zone.layoutZoneName || `Zone ${index + 1} - ${zoneTitle(zone)}`;
+    }
+
+    function localDateString(date = new Date()) {
+        const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return offsetDate.toISOString().slice(0, 10);
+    }
+
     function updateZoneIds(data) {
         const blocks = [...document.querySelectorAll('.zone-block')];
         data.zones = data.zones.map((zone, index) => {
@@ -126,6 +136,8 @@
     window.packageProjectData = function () {
         const data = updateZoneIds(originalPackageProjectData());
         data.id = activeProjectId || null;
+        data.layoutImport = layoutImportMetadata;
+        data.projectDate = byId('projectDate').value;
         return data;
     };
 
@@ -140,6 +152,8 @@
         byId('installerName').value = data.installerName || '';
         byId('installerPhone').value = data.installerPhone || '';
         byId('projNotes').value = data.projNotes || '';
+        byId('projectDate').value = data.projectDate || '';
+        layoutImportMetadata = data.layoutImport || null;
         byId('zonesContainer').replaceChildren();
         zoneCounter = 0;
 
@@ -147,6 +161,8 @@
             window.addZone();
             const zone = [...document.querySelectorAll('.zone-block')].at(-1);
             zone.dataset.zoneId = zoneData.id || makeId();
+            zone.dataset.layoutZoneName = zoneData.layoutZoneName || '';
+            zone.dataset.layoutInventory = JSON.stringify(zoneData.layoutInventory || []);
             const roomType = zone.querySelector('.room-type');
             roomType.value = zoneData.roomType || 'Bedroom';
             const customRoom = zone.querySelector('.custom-room-type');
@@ -253,7 +269,7 @@
                 const row = document.createElement('div');
                 row.className = 'room-row';
                 const name = document.createElement('span');
-                name.textContent = `Zone ${index + 1} - ${zoneTitle(zone)}`;
+                name.textContent = numberedZoneTitle(zone, index);
                 row.append(name);
                 addButton(row, 'Open Room', () => openProject(project.id, zone.id), 'portal-button secondary');
                 roomList.append(row);
@@ -454,7 +470,7 @@
         (session.project.zones || []).forEach((zone, index) => {
             const option = document.createElement('option');
             option.value = zone.id;
-            option.textContent = `Zone ${index + 1} - ${zoneTitle(zone)}`;
+            option.textContent = numberedZoneTitle(zone, index);
             room.append(option);
         });
         room.value = session.zone_id || state.supportZoneId || room.options[0]?.value || '';
@@ -760,6 +776,8 @@
         activeProjectId = makeId();
         for (const id of ['projName', 'projAddress', 'clientName', 'clientPhone',
             'installerName', 'installerPhone', 'projNotes']) byId(id).value = '';
+        byId('projectDate').value = localDateString();
+        layoutImportMetadata = null;
         byId('zonesContainer').replaceChildren();
         zoneCounter = 0;
         window.addZone();

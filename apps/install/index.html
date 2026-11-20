@@ -608,12 +608,22 @@
                 <div><label>Project Address</label><input type="text" id="projAddress" placeholder="123 Main St..."></div>
                 <div><label>Client Name</label><input type="text" id="clientName"></div>
                 <div><label>Client Phone</label><input type="text" id="clientPhone"></div>
+                <div><label>Project Date</label><input type="date" id="projectDate"></div>
                 <div><label>Installer Name</label><input type="text" id="installerName"></div>
                 <div><label>Installer Phone</label><input type="text" id="installerPhone"></div>
             </div>
             <div style="margin-top: 15px;">
                 <label>Project Notes</label>
                 <textarea id="projNotes" rows="3" placeholder="Enter custom notes, site conditions, or special instructions here..."></textarea>
+            </div>
+        </section>
+
+        <section class="project-card" id="areaSummary" style="border-top: 5px solid #0056b3;">
+            <h2>Floor Area &amp; Heater Coverage</h2>
+            <div class="summary-grid">
+                <div class="circuit-card"><p>Total Floor Area: <strong id="gFloorArea">0.0 sq ft</strong></p></div>
+                <div class="circuit-card"><p>Total Heated Area: <strong id="gHeatedArea">0.0 sq ft</strong></p></div>
+                <div class="circuit-card"><p>Overall Coverage: <strong id="gCoverage">0.0%</strong></p></div>
             </div>
         </section>
 
@@ -748,6 +758,7 @@
                 installerName: document.getElementById('installerName').value,
                 installerPhone: document.getElementById('installerPhone').value,
                 projNotes: document.getElementById('projNotes').value,
+                projectDate: document.getElementById('projectDate').value,
                 zones: []
             };
 
@@ -756,6 +767,8 @@
                 let zoneData = {
                     roomType: zone.querySelector('.room-type').value,
                     customRoomType: zone.querySelector('.custom-room-type').value,
+                    layoutZoneName: zone.dataset.layoutZoneName || '',
+                    layoutInventory: JSON.parse(zone.dataset.layoutInventory || '[]'),
                     roomSqft: zone.querySelector('.room-sqft').value,
                     thermoType: zone.querySelector('.thermostat-type').value,
                     customThermoType: zone.querySelector('.custom-thermo-type').value,
@@ -967,21 +980,26 @@
 
             zoneDiv.innerHTML = `
                     <div class="zone-header">
-                        <h2>Zone <span class="zone-number"></span>: <span class="zone-title-display">Bedroom</span></h2>
+                        <h2><span class="zone-title-prefix">Zone <span class="zone-number"></span>: </span><span class="zone-title-display">Bedroom</span></h2>
                         <button class="remove-zone-btn" onclick="removeZone(this)">Remove Zone</button>
                     </div>
                     <div class="grid">
                         <div>
                             <label>Room Type</label>
-                            <select class="room-type" onchange="handleRoomTypeChange(this); calculateZoneTotals(this)">
+                            <select class="room-type" onchange="this.closest('.zone-block').dataset.layoutZoneName=''; handleRoomTypeChange(this); calculateZoneTotals(this)">
                                 <option value="Bedroom">Bedroom</option><option value="Bathroom">Bathroom</option><option value="Kitchen">Kitchen</option><option value="Laundry">Laundry</option><option value="Living room">Living room</option><option value="Rec room">Rec room</option><option value="Foyer">Foyer</option><option value="Dining">Dining</option><option value="Hallway">Hallway</option><option value="Closet">Closet</option><option value="Theatre">Theatre</option><option value="GYM">GYM</option><option value="Garage">Garage</option><option value="Office">Office</option><option value="Entrance">Entrance</option><option value="Mudroom">Mudroom</option><option value="Master Bedroom">Master Bedroom</option><option value="Onsuite">Onsuite</option><option value="Other">Other (Custom)</option>
                             </select>
-                            <input type="text" class="custom-room-type" placeholder="Enter custom room name" style="display:none; margin-top:5px;" oninput="updateZoneTitle(this); calculateZoneTotals(this)">
+                            <input type="text" class="custom-room-type" placeholder="Enter custom room name" style="display:none; margin-top:5px;" oninput="this.closest('.zone-block').dataset.layoutZoneName=''; updateZoneTitle(this); calculateZoneTotals(this)">
                         </div>
                         <div><label>Total Room Sq.Ft.</label><input type="number" class="room-sqft" value="0" min="0" oninput="calculateZoneTotals(this)"></div>
-                        <div><label>Total Heater Sq.Ft.</label><input type="number" class="heater-sqft-total" readonly value="0"></div>
+                        <div><label>Total Heated Sq.Ft.</label><input type="number" class="heater-sqft-total" readonly value="0"></div>
                         <div><label>Coverage Percentage</label><input type="text" class="coverage-percentage coverage-box" readonly value="0%"></div>
                     </div>
+                    <section class="layout-inventory project-card" hidden>
+                        <h3>Unassigned Layout Heaters</h3>
+                        <p>These heaters count toward coverage until the matching model and quantity are entered in a circuit below.</p>
+                        <ul class="layout-inventory-list"></ul>
+                    </section>
                     <div class="materials-grid">
                         <div>
                             <label>Thermostat Model</label>
@@ -1023,6 +1041,26 @@
             updateZoneNumbers();
         }
 
+        function remainingLayoutHeaters(inventory, circuitHeaters) {
+            const assignedByModel = new Map();
+            for (const heater of circuitHeaters) {
+                if (!heater.heaterValue || heater.heaterValue === "0|0|0|0") continue;
+                assignedByModel.set(heater.heaterValue,
+                    (assignedByModel.get(heater.heaterValue) || 0) + heater.qty);
+            }
+            return inventory.map(item => ({
+                ...item,
+                remaining: Math.max(0, item.qty - (assignedByModel.get(item.heaterValue) || 0)),
+            }));
+        }
+
+        function circuitHeatersForZone(zone) {
+            return [...zone.querySelectorAll('.circuit-table-body tr')].map(row => ({
+                heaterValue: row.querySelector('.heater-select').value,
+                qty: parseInt(row.querySelector('.qty-input').value, 10) || 0,
+            }));
+        }
+
         function removeZone(button) {
             if (confirm("Are you sure you want to delete this entire zone?")) {
                 button.closest('.zone-block').remove();
@@ -1037,7 +1075,9 @@
             const custom = zone.querySelector('.custom-room-type');
             const titleDisplay = zone.querySelector('.zone-title-display');
 
-            titleDisplay.innerText = select.value === "Other" && custom.value ? custom.value : select.value;
+            zone.querySelector('.zone-title-prefix').hidden = Boolean(zone.dataset.layoutZoneName);
+            titleDisplay.innerText = zone.dataset.layoutZoneName ||
+                (select.value === "Other" && custom.value ? custom.value : select.value);
         }
 
         function addHeaterRow(elementInsideZone) {
@@ -1118,6 +1158,26 @@
                 if (heaterVolts > 0) circuitTotals[circuitId].voltages.add(heaterVolts);
             });
 
+            const inventory = JSON.parse(zone.dataset.layoutInventory || '[]');
+            const remainingInventory = remainingLayoutHeaters(inventory, circuitHeatersForZone(zone));
+            for (const item of remainingInventory) {
+                grandTotalHeaterSqFt += item.remaining * item.sqftEach;
+            }
+            const inventoryPanel = zone.querySelector('.layout-inventory');
+            const inventoryList = zone.querySelector('.layout-inventory-list');
+            inventoryPanel.hidden = inventory.length === 0;
+            inventoryList.replaceChildren();
+            for (const item of remainingInventory.filter(item => item.remaining > 0)) {
+                const entry = document.createElement('li');
+                entry.textContent = `${item.name}: ${item.remaining} unassigned × ${item.sqftEach} sq ft`;
+                inventoryList.append(entry);
+            }
+            if (inventory.length && !inventoryList.children.length) {
+                const entry = document.createElement('li');
+                entry.textContent = 'All imported heaters are assigned to circuits.';
+                inventoryList.append(entry);
+            }
+
             zone.querySelector('.heater-sqft-total').value = grandTotalHeaterSqFt;
             const roomSqFt = parseFloat(zone.querySelector('.room-sqft').value) || 0;
             let coverage = 0;
@@ -1178,9 +1238,14 @@
 
         function updateGrandTotals() {
             let gWatts = 0, gAmps = 0, gThermostats = 0, gModules = 0, gSensor = 0, gPower = 0;
-            let heaterTakeoff = {}; let thermoTakeoff = {}; let moduleTakeoff = {};
+            let gFloorArea = 0, gHeatedArea = 0;
+            const heaterTakeoff = Object.create(null);
+            const thermoTakeoff = Object.create(null);
+            const moduleTakeoff = Object.create(null);
 
             document.querySelectorAll('.zone-block').forEach(zone => {
+                gFloorArea += parseFloat(zone.querySelector('.room-sqft').value) || 0;
+                gHeatedArea += parseFloat(zone.querySelector('.heater-sqft-total').value) || 0;
 
                 // Track Thermostats
                 let thermoType = zone.querySelector('.thermostat-type').value;
@@ -1219,6 +1284,13 @@
                     if (heaterTakeoff[heaterName]) heaterTakeoff[heaterName] += qty;
                     else heaterTakeoff[heaterName] = qty;
                 });
+                const inventory = JSON.parse(zone.dataset.layoutInventory || '[]');
+                for (const item of remainingLayoutHeaters(inventory, circuitHeatersForZone(zone))) {
+                    if (item.remaining > 0) {
+                        const name = `Unassigned Layout ${item.name}`;
+                        heaterTakeoff[name] = (heaterTakeoff[name] || 0) + item.remaining;
+                    }
+                }
             });
 
             document.getElementById('gTotalWatts').innerText = gWatts.toFixed(2) + ' W';
@@ -1227,16 +1299,25 @@
             document.getElementById('gTotalModules').innerText = gModules;
             document.getElementById('gTotalSensor').innerText = gSensor;
             document.getElementById('gTotalPower').innerText = gPower;
+            document.getElementById('gFloorArea').innerText = `${gFloorArea.toFixed(1)} sq ft`;
+            document.getElementById('gHeatedArea').innerText = `${gHeatedArea.toFixed(1)} sq ft`;
+            document.getElementById('gCoverage').innerText = `${(gFloorArea > 0 ? gHeatedArea / gFloorArea * 100 : 0).toFixed(1)}%`;
 
             const listEl = document.getElementById('gHeaterList');
-            listEl.innerHTML = '';
-
-            if (Object.keys(heaterTakeoff).length === 0 && Object.keys(thermoTakeoff).length === 0 && Object.keys(moduleTakeoff).length === 0) {
-                listEl.innerHTML = '<li>No materials added yet.</li>';
-            } else {
-                for (const [name, qty] of Object.entries(thermoTakeoff)) listEl.innerHTML += `<li><strong>${qty}x</strong> Thermostat: ${name}</li>`;
-                for (const [name, qty] of Object.entries(moduleTakeoff)) listEl.innerHTML += `<li><strong>${qty}x</strong> Power Module: ${name}</li>`;
-                for (const [name, qty] of Object.entries(heaterTakeoff)) listEl.innerHTML += `<li><strong>${qty}x</strong> Heater: ${name}</li>`;
+            listEl.replaceChildren();
+            for (const [label, items] of [['Thermostat', thermoTakeoff], ['Power Module', moduleTakeoff], ['Heater', heaterTakeoff]]) {
+                for (const [name, qty] of Object.entries(items)) {
+                    const item = document.createElement('li');
+                    const count = document.createElement('strong');
+                    count.textContent = `${qty}x`;
+                    item.append(count, ` ${label}: ${name}`);
+                    listEl.append(item);
+                }
+            }
+            if (!listEl.children.length) {
+                const item = document.createElement('li');
+                item.textContent = 'No materials added yet.';
+                listEl.append(item);
             }
         }
     </script>
