@@ -484,6 +484,7 @@
             .add-btn, .add-zone-btn, .remove-zone-btn, .delete-btn, .action-bar, .cloud-dashboard, .top-nav, #projectDashboard, #adminDashboard, .live-support-bar {
                 display: none !important;
             }
+            .print-excluded-zone { display: none !important; }
 
             .project-card, .zone-block {
                 box-shadow: none;
@@ -1256,14 +1257,14 @@
             updateGrandTotals();
         }
 
-        function updateGrandTotals() {
+        function updateGrandTotals(zones = document.querySelectorAll('.zone-block')) {
             let gWatts = 0, gAmps = 0, gThermostats = 0, gModules = 0, gSensor = 0, gPower = 0;
             let gFloorArea = 0, gHeatedArea = 0;
             const heaterTakeoff = Object.create(null);
             const thermoTakeoff = Object.create(null);
             const moduleTakeoff = Object.create(null);
 
-            document.querySelectorAll('.zone-block').forEach(zone => {
+            zones.forEach(zone => {
                 gFloorArea += parseFloat(zone.querySelector('.room-sqft').value) || 0;
                 gHeatedArea += parseFloat(zone.querySelector('.heater-sqft-total').value) || 0;
 

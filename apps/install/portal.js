@@ -18,6 +18,7 @@
         directoryOffset: 0,
         searchTimer: null,
         editorAcknowledged: '',
+        printBusy: false,
     };
 
     const byId = id => document.getElementById(id);
@@ -257,6 +258,8 @@
             toggle.setAttribute('aria-expanded', String(expanded));
             toggle.textContent = expanded ? 'Hide rooms' : 'Show rooms';
             addButton(controls, 'Edit Project', () => openProject(project.id), 'portal-button');
+            addButton(controls, 'Print / Save PDF', () => printDashboardReport(project),
+                'portal-button secondary');
             if (!state.support) {
                 const removeProject = addButton(controls, 'Delete Project',
                     () => archiveDashboardProject(project, removeProject),
@@ -283,6 +286,8 @@
                 const actions = document.createElement('div');
                 actions.className = 'portal-toolbar room-actions';
                 addButton(actions, 'Open Room', () => openProject(project.id, zone.id), 'portal-button secondary');
+                addButton(actions, 'Print / Save PDF', () => printDashboardReport(project, index),
+                    'portal-button secondary');
                 if (!state.support) {
                     const rename = addButton(actions, 'Rename Room / Zone',
                         () => changeDashboardZone(project, index, 'rename', rename),
@@ -421,6 +426,61 @@
             const index = [...document.querySelectorAll('.zone-block')]
                 .findIndex(zone => zone.dataset.zoneId === zoneId);
             document.querySelectorAll('.zone-block')[index]?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    async function printDashboardReport(project, zoneIndex = null) {
+        showError('projectDashboardError', '');
+        if (state.printBusy || state.support) {
+            showError('projectDashboardError', 'Finish printing or end live help before opening a saved report.');
+            return;
+        }
+        const user = state.user;
+        const originalTitle = document.title;
+        let beforePrint;
+        const cleanup = () => {
+            if (beforePrint) window.removeEventListener('beforeprint', beforePrint);
+            window.removeEventListener('afterprint', cleanup);
+            document.querySelectorAll('.print-excluded-zone')
+                .forEach(zone => zone.classList.remove('print-excluded-zone'));
+            updateGrandTotals();
+            document.title = originalTitle;
+            state.printBusy = false;
+        };
+        state.printBusy = true;
+        try {
+            const { data, error } = await _supabase.from('install_projects')
+                .select('id, project_name, client_name, project_data, updated_at')
+                .eq('id', project.id)
+                .is('archived_at', null)
+                .single();
+            if (error) throw error;
+            if (state.user !== user) {
+                cleanup();
+                return;
+            }
+            if (zoneIndex !== null && (data.updated_at !== project.updated_at ||
+                !data.project_data.zones?.[zoneIndex])) {
+                throw new Error('This project has changed. Refresh the project list before printing a room.');
+            }
+            openEditor(data);
+            const zones = [...document.querySelectorAll('.zone-block')];
+            const selected = zoneIndex === null ? zones : [zones[zoneIndex]];
+            zones.forEach(zone => zone.classList.toggle('print-excluded-zone', !selected.includes(zone)));
+            const label = zoneIndex === null ? '' : ` - ${numberedZoneTitle(data.project_data.zones[zoneIndex], zoneIndex)}`;
+            document.title = `${data.project_name}${label} - ThermalSkinIQ Heater Installation Report`;
+            beforePrint = () => updateGrandTotals(selected);
+            window.addEventListener('beforeprint', beforePrint);
+            window.addEventListener('afterprint', cleanup);
+            await document.fonts.ready;
+            window.print();
+        } catch (error) {
+            cleanup();
+            console.error('Install report could not be opened:', error);
+            if (state.user === user) {
+                if (state.view === 'editor') alert(`Could not open report: ${error.message}`);
+                else showError('projectDashboardError', `Could not open report: ${error.message}`);
+            }
         }
     }
 
