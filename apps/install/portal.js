@@ -19,7 +19,9 @@
         searchTimer: null,
         editorAcknowledged: '',
         printBusy: false,
+        initializing: true,
     };
+    let installDemo;
 
     const byId = id => document.getElementById(id);
     const makeId = () => crypto.randomUUID();
@@ -61,6 +63,7 @@
     }
 
     function rpc(name, parameters) {
+        if (installDemo?.active) throw new Error('Live help and account changes are unavailable in practice mode.');
         return _supabase.rpc(name, parameters || {});
     }
 
@@ -79,9 +82,9 @@
         byId('projectDashboard').hidden = view !== 'projects';
         byId('adminDashboard').hidden = view !== 'admin';
         byId('editorScreen').hidden = view !== 'editor';
-        byId('myProjectsButton').hidden = view === 'projects';
-        byId('adminDashboardButton').hidden = !state.isAdmin || view === 'admin';
-        byId('portalTitle').textContent = view === 'projects'
+        byId('myProjectsButton').hidden = installDemo?.active || view === 'projects';
+        byId('adminDashboardButton').hidden = installDemo?.active || !state.isAdmin || view === 'admin';
+        byId('portalTitle').textContent = installDemo?.active ? 'Guided Install Demo' : view === 'projects'
             ? 'My Install Projects' : view === 'admin' ? 'Admin Dashboard' : 'Project Editor';
     }
 
@@ -307,6 +310,7 @@
     }
 
     async function updateDashboardProject(project, values, user) {
+        if (installDemo?.active) throw new Error('Real projects cannot be updated from practice mode.');
         const { data, error } = await _supabase.from('install_projects')
             .update({ ...values, updated_at: new Date().toISOString() })
             .eq('id', project.id)
@@ -398,6 +402,7 @@
     }
 
     async function loadProjects() {
+        if (installDemo?.active) throw new Error('Exit the demo before loading account projects.');
         showError('projectDashboardError', '');
         const { data, error } = await _supabase
             .from('install_projects')
@@ -891,6 +896,10 @@
     };
 
     window.saveProjectToCloud = async function () {
+        if (installDemo?.active) {
+            installDemo.save();
+            return;
+        }
         if (state.support && state.syncBusy) {
             alert('Live help is synchronizing. Please try again in a moment.');
             return;
@@ -942,6 +951,10 @@
     };
 
     window.startNewProject = function () {
+        if (installDemo?.active) {
+            alert('Exit the guided demo before creating a real project.');
+            return;
+        }
         if (state.support) {
             showError('liveSupportError', 'End live help before starting a different project.');
             return;
@@ -961,6 +974,10 @@
     };
 
     window.backToProjects = async function () {
+        if (installDemo?.active) {
+            installDemo.exit();
+            return;
+        }
         if (state.support) {
             if (state.syncBusy) {
                 alert('Live help is synchronizing. Please try again in a moment.');
@@ -993,6 +1010,10 @@
     };
 
     window.changeUserPage = async direction => {
+        if (installDemo?.active) {
+            alert('Exit the guided demo before searching accounts.');
+            return;
+        }
         state.directoryOffset = Math.max(0, state.directoryOffset + direction * 20);
         try {
             await loadAdminDashboard();
@@ -1017,6 +1038,10 @@
     }
 
     window.showAdminDashboard = async function () {
+        if (installDemo?.active) {
+            installDemo.exit();
+            return;
+        }
         if (state.view === 'editor') {
             await window.backToProjects();
             if (state.view !== 'projects') return;
@@ -1030,6 +1055,10 @@
     };
 
     window.signIn = async function () {
+        if (installDemo?.active) {
+            installDemo.exit();
+            return;
+        }
         showError('authError', '');
         const button = byId('signInButton');
         if (button.disabled) return;
@@ -1089,6 +1118,7 @@
     }
 
     function showSignedOut() {
+        installDemo?.discard();
         clearTimeout(state.pollTimer);
         clearTimeout(state.searchTimer);
         state.user = null;
@@ -1108,6 +1138,10 @@
     }
 
     window.signOut = async function () {
+        if (installDemo?.active) {
+            installDemo.exit();
+            return;
+        }
         if (state.syncBusy) {
             if (state.support) alert('Live help is synchronizing. Please try again in a moment.');
             return;
@@ -1153,7 +1187,65 @@
         scheduleSupportPoll();
     });
 
-    window.onload = async function () {
+    installDemo = window.createInstallDemo({
+        begin() {
+            if (state.initializing || byId('signInButton').disabled || state.printBusy ||
+                state.syncBusy || state.support) {
+                throw new Error('Finish signing in, printing, or live help before starting the demo.');
+            }
+            if (!byId('appScreen').hidden && state.view !== 'projects') {
+                throw new Error('Return to My Projects before starting the demo. Your editor stays unchanged.');
+            }
+            const snapshot = JSON.parse(JSON.stringify(window.packageProjectData()));
+            const id = activeProjectId;
+            const acknowledged = state.editorAcknowledged;
+            const view = state.view;
+            const authHidden = byId('authScreen').hidden;
+            const appHidden = byId('appScreen').hidden;
+            const appDisplay = byId('appScreen').style.display;
+            const nav = document.querySelector('.portal-nav-actions');
+            const navHidden = nav.hidden;
+            clearTimeout(state.searchTimer);
+            nav.hidden = true;
+            byId('authScreen').hidden = true;
+            byId('appScreen').hidden = false;
+            byId('appScreen').style.display = 'block';
+            return (restoreEditor = true) => {
+                if (restoreEditor) populateEditor(snapshot);
+                else {
+                    for (const field of ['projName', 'projAddress', 'clientName', 'clientPhone',
+                        'installerName', 'installerPhone', 'projNotes', 'projectDate']) byId(field).value = '';
+                    layoutImportMetadata = null;
+                }
+                if (!restoreEditor || !snapshot.zones.length) {
+                    byId('zonesContainer').replaceChildren();
+                    zoneCounter = 0;
+                    updateGrandTotals();
+                }
+                activeProjectId = restoreEditor ? id : null;
+                state.editorAcknowledged = restoreEditor ? acknowledged : '';
+                setView(view);
+                byId('authScreen').hidden = authHidden;
+                byId('appScreen').hidden = appHidden;
+                byId('appScreen').style.display = appDisplay;
+                nav.hidden = navHidden;
+                window.scrollTo(0, 0);
+            };
+        },
+        open: openEditor,
+        showProject: () => setView('demo'),
+    });
+    window.startInstallDemo = () => installDemo.start();
+    const originalSignUp = window.signUp;
+    window.signUp = (...args) => {
+        if (installDemo.active) {
+            alert('Exit the guided demo before creating an account.');
+            return;
+        }
+        return originalSignUp(...args);
+    };
+
+    async function initializePortal() {
         const { data, error } = await _supabase.auth.getSession();
         if (error) return window.showAuthError(`Could not check your sign-in: ${error.message}`);
         if (data.session) {
@@ -1170,6 +1262,15 @@
             if (embeddedPortal) showEmbeddedCredentials();
             byId('appScreen').hidden = true;
             byId('authScreen').hidden = false;
+        }
+    }
+    window.onload = async function () {
+        try {
+            await initializePortal();
+        } finally {
+            state.initializing = false;
+            byId('authInstallDemoButton').disabled = false;
+            byId('dashboardInstallDemoButton').disabled = false;
         }
     };
 })();

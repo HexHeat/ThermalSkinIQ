@@ -505,6 +505,15 @@
                 overflow: hidden;
             }
         }
+        .install-demo-guide { position: sticky; top: 0; z-index: 10; background: #eef5ff; border: 2px solid #0056b3; border-radius: 8px; padding: 14px; margin-bottom: 18px; }
+        .install-demo-guide h2 { margin: 0 0 8px; }
+        .install-demo-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .install-demo-target { outline: 3px solid #0056b3; outline-offset: 4px; scroll-margin-top: 260px; }
+        body.install-demo-active .add-zone-btn, body.install-demo-active .remove-zone-btn { display: none; }
+        @media print {
+            .install-demo-guide, #installDemoProject { display: none !important; }
+            .install-demo-target { outline: none; }
+        }
     </style>
 </head>
 <body>
@@ -521,6 +530,8 @@
             <button id="signUpButton" class="auth-secondary-btn" onclick="signUp()">Create Account</button>
             <button id="continuePortalButton" class="auth-btn" onclick="continueInstallPortal()" hidden>Continue to your projects</button>
             <button id="embeddedSignOutButton" class="auth-secondary-btn" onclick="signOut()" hidden>Log Out</button>
+            <button id="authInstallDemoButton" class="auth-secondary-btn" onclick="startInstallDemo()" disabled>Start Guided Demo</button>
+            <p>Practice with Example Home. No sign-in required; real projects stay untouched.</p>
         </div>
     </div>
 
@@ -543,6 +554,25 @@
             </div>
         </div>
 
+        <section id="installDemoGuide" class="install-demo-guide" aria-label="Guided Install demo" hidden>
+            <h2 id="installDemoStep" aria-live="polite"></h2>
+            <p id="installDemoInstruction"></p>
+            <p>Practice only. Circuit and control choices in this lesson are not an approved installation design. Have a qualified installer verify real projects.</p>
+            <div id="installDemoError" class="sync-error" role="alert"></div>
+            <div class="install-demo-actions">
+                <button id="installDemoBack" class="portal-button secondary" type="button">Back</button>
+                <button id="installDemoNext" class="portal-button" type="button">Next</button>
+                <button id="installDemoRestart" class="portal-button secondary" type="button">Restart</button>
+                <button id="installDemoExit" class="portal-button secondary" type="button">Exit Demo</button>
+            </div>
+        </section>
+        <section id="installDemoProject" class="portal-panel" hidden>
+            <h2>Example Home - Practice</h2>
+            <p>This practice project is already copied from the Example Home Layout report. All heaters begin in each room's holding area.</p>
+            <p>5 rooms · 1,010 sq ft of floor · 474 sq ft heated · 46.9% coverage</p>
+            <button id="openInstallDemoProject" type="button" class="portal-button">Open Practice Project</button>
+        </section>
+
         <div id="liveSupportBar" class="live-support-bar" hidden>
             <div class="portal-toolbar">
                 <span id="liveSupportStatus" class="live-support-status"></span>
@@ -564,6 +594,7 @@
                     <p id="dashboardDescription">Each project is a folder for its rooms and heater layouts.</p>
                 </div>
                 <div>
+                    <button id="dashboardInstallDemoButton" class="portal-button secondary" onclick="startInstallDemo()" disabled>Start Guided Demo</button>
                     <button class="portal-button success" onclick="startNewProject()">+ Start New Project</button>
                     <button id="resumeHelpButton" class="portal-button" onclick="resumeInstallSupport()" hidden>Resume Live Help</button>
                 </div>
@@ -606,6 +637,7 @@
         <header class="print-report-heading">
             <img src="thermal-skiniq-logo.png" alt="">
             <h1>ThermalSkinIQ Heater Installation Report</h1>
+            <p id="installDemoPrintDisclaimer" hidden>PRACTICE ONLY - Training example, not an approved installation design.</p>
         </header>
         <section class="project-card">
             <h2>Project Information</h2>
@@ -1353,6 +1385,7 @@
             }
         }
     </script>
+    <script src="install-demo.js"></script>
     <script src="portal.js"></script>
 </body>
 </html>
