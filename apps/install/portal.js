@@ -20,6 +20,7 @@
         editorAcknowledged: '',
         printBusy: false,
         initializing: true,
+        demoCompleted: false,
     };
     let installDemo;
 
@@ -65,6 +66,42 @@
     function rpc(name, parameters) {
         if (installDemo?.active) throw new Error('Live help and account changes are unavailable in practice mode.');
         return _supabase.rpc(name, parameters || {});
+    }
+
+    function updateLiveHelpGate() {
+        for (const button of document.querySelectorAll('.request-live-help')) {
+            button.disabled = !state.demoCompleted;
+            button.title = state.demoCompleted ? 'Request Live Help'
+                : 'Complete the guided Install demo while signed in to unlock live help.';
+        }
+        byId('liveHelpDemoRequirement').hidden = state.demoCompleted;
+    }
+
+    async function checkDemoCompletion() {
+        const user = state.user;
+        if (!user || installDemo?.active) return;
+        state.demoCompleted = false;
+        updateLiveHelpGate();
+        byId('retryDemoAccountCheck').disabled = true;
+        try {
+            const { data, error } = await rpc('guided_demo_completed', { p_app: 'install' });
+            if (error) throw error;
+            if (typeof data !== 'boolean') throw new Error('The account returned invalid demo completion data.');
+            if (state.user !== user) return;
+            state.demoCompleted = data;
+            showError('demoAccountError', '');
+            byId('retryDemoAccountCheck').hidden = true;
+        } catch (error) {
+            console.error('Checking Install demo completion failed:', error);
+            if (state.user !== user) return;
+            showError('demoAccountError', `Could not check demo completion: ${error.message}`);
+            byId('retryDemoAccountCheck').hidden = false;
+        } finally {
+            if (state.user === user) {
+                byId('retryDemoAccountCheck').disabled = false;
+                updateLiveHelpGate();
+            }
+        }
     }
 
     window.askForSupportCell = function () {
@@ -270,7 +307,7 @@
                 addButton(
                     controls, 'Request Live Help',
                     () => requestLiveHelp(project.id, null),
-                    'portal-button secondary',
+                    'portal-button secondary request-live-help',
                 );
             }
             const roomList = document.createElement('div');
@@ -307,6 +344,7 @@
             roomList.hidden = !expanded;
             root.append(folder);
         }
+        updateLiveHelpGate();
     }
 
     async function updateDashboardProject(project, values, user) {
@@ -773,6 +811,10 @@
     }
 
     async function requestLiveHelp(projectId, zoneId) {
+        if (!state.demoCompleted) {
+            showError('projectDashboardError', 'Complete the guided Install demo while signed in to unlock live help.');
+            return;
+        }
         const project = state.projects.find(item => item.id === projectId);
         if (!project) {
             showError('projectDashboardError', 'Refresh the project list before requesting help.');
@@ -1024,6 +1066,8 @@
 
     async function loadPortal(user) {
         state.user = user;
+        state.demoCompleted = false;
+        updateLiveHelpGate();
         currentUserId = user.id;
         byId('userEmailDisplay').textContent = `Logged in as: ${user.email || ''}`;
         const { data: isAdmin, error } = await rpc('support_is_admin');
@@ -1035,6 +1079,7 @@
         byId('appScreen').style.display = 'block';
         if (state.isAdmin) await window.showAdminDashboard();
         else await showProjects();
+        await checkDemoCompletion();
     }
 
     window.showAdminDashboard = async function () {
@@ -1122,6 +1167,8 @@
         clearTimeout(state.pollTimer);
         clearTimeout(state.searchTimer);
         state.user = null;
+        state.demoCompleted = false;
+        updateLiveHelpGate();
         state.support = null;
         state.isAdmin = false;
         state.isOwner = false;
@@ -1168,8 +1215,12 @@
         }
     };
 
-    _supabase.auth.onAuthStateChange(event => {
+    _supabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_OUT') showSignedOut();
+        else if (session?.user && state.user && session.user.id !== state.user.id) {
+            showSignedOut();
+            window.showAuthError('Your account changed in another tab. Sign in again before continuing.');
+        }
     });
 
     byId('directorySearch').addEventListener('input', () => {
@@ -1188,6 +1239,22 @@
     });
 
     installDemo = window.createInstallDemo({
+        userId: () => state.user?.id,
+        async complete(userId) {
+            const user = state.user;
+            if (!user || user.id !== userId) {
+                throw new Error('Your sign-in changed. Complete the demo in your own signed-in account.');
+            }
+            // Only completion metadata may leave practice mode; project data never does.
+            const { data, error } = await _supabase.rpc('complete_guided_demo', { p_app: 'install' });
+            if (error) throw error;
+            if (data !== true) throw new Error('The account did not confirm demo completion.');
+            if (state.user !== user) return;
+            state.demoCompleted = true;
+            showError('demoAccountError', '');
+            byId('retryDemoAccountCheck').hidden = true;
+            updateLiveHelpGate();
+        },
         begin() {
             if (state.initializing || byId('signInButton').disabled || state.printBusy ||
                 state.syncBusy || state.support) {
@@ -1236,6 +1303,7 @@
         showProject: () => setView('demo'),
     });
     window.startInstallDemo = () => installDemo.start();
+    byId('retryDemoAccountCheck').addEventListener('click', checkDemoCompletion);
     const originalSignUp = window.signUp;
     window.signUp = (...args) => {
         if (installDemo.active) {

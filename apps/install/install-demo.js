@@ -133,6 +133,9 @@
             byId('installDemoGuide').dataset.kind = step.kind;
             byId('installDemoStep').textContent = `Step ${session.index + 1} of ${session.steps.length}: ${step.title}`;
             byId('installDemoInstruction').textContent = step.text;
+            byId('installDemoCompletionStatus').hidden = step.kind !== 'complete';
+            byId('retryInstallDemoCompletion').hidden = step.kind !== 'complete' || !session.completionError;
+            byId('retryInstallDemoCompletion').disabled = !!session.completionBusy;
             byId('installDemoNext').disabled = printing || !step.ready();
             byId('installDemoBack').disabled = printing || session.index === 0;
             for (const id of ['installDemoRestart', 'installDemoExit']) byId(id).disabled = printing;
@@ -147,6 +150,38 @@
             error('');
             session.index++;
             render();
+            if (session.steps[session.index].kind === 'complete') saveCompletion();
+        }
+
+        async function saveCompletion() {
+            if (!session || session.completionBusy || session.completionSaved ||
+                session.steps[session.index].kind !== 'complete') return;
+            const current = session;
+            if (!current.userId) {
+                byId('installDemoCompletionStatus').textContent =
+                    'Sign in and complete this demo while signed in to unlock live help for your account.';
+                return;
+            }
+            current.completionBusy = true;
+            current.completionError = false;
+            byId('installDemoCompletionStatus').textContent = 'Saving completion to your account...';
+            render(false);
+            try {
+                await host.complete(current.userId);
+                if (session !== current) return;
+                current.completionSaved = true;
+                byId('installDemoCompletionStatus').textContent =
+                    'Completion saved to your account. Install live help is unlocked on all devices.';
+            } catch (failure) {
+                console.error('Saving Install demo completion failed:', failure);
+                if (session !== current) return;
+                current.completionError = true;
+                byId('installDemoCompletionStatus').textContent =
+                    `Could not save completion to your account: ${failure.message}. Please retry.`;
+            } finally {
+                current.completionBusy = false;
+                if (session === current) render(false);
+            }
         }
 
         function reset() {
@@ -201,7 +236,8 @@
                 if (session) return;
                 try {
                     const restore = host.begin();
-                    session = { restore, title: document.title, saveLabel: byId('saveCloudBtn').textContent };
+                    session = { restore, title: document.title, saveLabel: byId('saveCloudBtn').textContent,
+                        userId: host.userId() };
                     document.body.classList.add('install-demo-active');
                     byId('installDemoGuide').hidden = false;
                     byId('installDemoPrintDisclaimer').hidden = false;
@@ -283,6 +319,7 @@
             if (session && !printing && confirm('Restart and discard the practice project? Real projects are untouched.')) reset();
         });
         byId('installDemoExit').addEventListener('click', api.exit);
+        byId('retryInstallDemoCompletion').addEventListener('click', saveCompletion);
         function onEdit(event) {
             if (!session || printing || !event.target.closest('#editorScreen')) return;
             session.saved = null;

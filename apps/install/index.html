@@ -532,6 +532,7 @@
             <button id="embeddedSignOutButton" class="auth-secondary-btn" onclick="signOut()" hidden>Log Out</button>
             <button id="authInstallDemoButton" class="auth-secondary-btn" onclick="startInstallDemo()" disabled>Start Guided Demo</button>
             <p>Practice with Example Home. No sign-in required; real projects stay untouched.</p>
+            <p>Sign in before starting to save demo completion to your account and unlock live help across devices.</p>
         </div>
     </div>
 
@@ -557,6 +558,7 @@
         <section id="installDemoGuide" class="install-demo-guide" aria-label="Guided Install demo" hidden>
             <h2 id="installDemoStep" aria-live="polite"></h2>
             <p id="installDemoInstruction"></p>
+            <p id="installDemoCompletionStatus" role="status" hidden></p>
             <p>Practice only. Circuit and control choices in this lesson are not an approved installation design. Have a qualified installer verify real projects.</p>
             <div id="installDemoError" class="sync-error" role="alert"></div>
             <div class="install-demo-actions">
@@ -564,6 +566,7 @@
                 <button id="installDemoNext" class="portal-button" type="button">Next</button>
                 <button id="installDemoRestart" class="portal-button secondary" type="button">Restart</button>
                 <button id="installDemoExit" class="portal-button secondary" type="button">Exit Demo</button>
+                <button id="retryInstallDemoCompletion" class="portal-button secondary" type="button" hidden>Retry Saving Completion</button>
             </div>
         </section>
         <section id="installDemoProject" class="portal-panel" hidden>
@@ -599,6 +602,9 @@
                     <button id="resumeHelpButton" class="portal-button" onclick="resumeInstallSupport()" hidden>Resume Live Help</button>
                 </div>
             </div>
+            <p id="liveHelpDemoRequirement">Complete the guided Install demo while signed in to unlock live help.</p>
+            <div id="demoAccountError" class="sync-error" role="alert"></div>
+            <button id="retryDemoAccountCheck" class="portal-button secondary" type="button" hidden>Retry Completion Check</button>
             <div id="projectDashboardError" class="sync-error" role="alert"></div>
             <div id="projectFolders"></div>
         </section>
