@@ -219,6 +219,9 @@
 
     function renderProjectFolders() {
         const root = byId('projectFolders');
+        const expandedProjects = new Set([...root.querySelectorAll('.project-folder')]
+            .filter(folder => folder.querySelector('[aria-expanded="true"]'))
+            .map(folder => folder.dataset.projectId));
         root.replaceChildren();
         if (!state.projects.length) {
             const empty = document.createElement('p');
@@ -231,6 +234,7 @@
         for (const project of state.projects) {
             const folder = document.createElement('section');
             folder.className = 'project-folder';
+            folder.dataset.projectId = project.id;
             const header = document.createElement('div');
             header.className = 'folder-heading';
             const titleArea = document.createElement('div');
@@ -249,7 +253,9 @@
                 toggle.textContent = expanded ? 'Show rooms' : 'Hide rooms';
                 roomList.hidden = expanded;
             }, 'portal-button secondary');
-            toggle.setAttribute('aria-expanded', 'false');
+            const expanded = expandedProjects.has(project.id);
+            toggle.setAttribute('aria-expanded', String(expanded));
+            toggle.textContent = expanded ? 'Hide rooms' : 'Show rooms';
             addButton(controls, 'Edit Project', () => openProject(project.id), 'portal-button');
             if (!state.support) {
                 addButton(
@@ -271,13 +277,83 @@
                 const name = document.createElement('span');
                 name.textContent = numberedZoneTitle(zone, index);
                 row.append(name);
-                addButton(row, 'Open Room', () => openProject(project.id, zone.id), 'portal-button secondary');
+                const actions = document.createElement('div');
+                actions.className = 'portal-toolbar room-actions';
+                addButton(actions, 'Open Room', () => openProject(project.id, zone.id), 'portal-button secondary');
+                if (!state.support) {
+                    const rename = addButton(actions, 'Rename Room / Zone',
+                        () => changeDashboardZone(project, index, 'rename', rename),
+                        'portal-button');
+                    const remove = addButton(actions, 'Delete Room / Zone',
+                        () => changeDashboardZone(project, index, 'delete', remove),
+                        'portal-button danger');
+                }
+                row.append(actions);
                 roomList.append(row);
             });
             header.append(titleArea, controls);
             folder.append(header, roomList);
-            roomList.hidden = true;
+            roomList.hidden = !expanded;
             root.append(folder);
+        }
+    }
+
+    async function changeDashboardZone(project, index, action, button) {
+        if (button.disabled) return;
+        showError('projectDashboardError', '');
+        if (state.support) {
+            showError('projectDashboardError', 'End live help before changing rooms on the dashboard.');
+            return;
+        }
+        const zone = project.project_data.zones[index];
+        let name;
+        if (action === 'rename') {
+            const answer = prompt('Enter the new room / zone name:', zoneTitle(zone));
+            if (answer === null) return;
+            name = answer.trim();
+            if (!name) {
+                showError('projectDashboardError', 'Enter a room / zone name before saving.');
+                return;
+            }
+        } else if (!confirm(`Delete "${numberedZoneTitle(zone, index)}" from "${project.project_name}"? ` +
+            'This removes the room, its circuits, and its unassigned heater inventory.')) {
+            return;
+        }
+
+        const user = state.user;
+        button.disabled = true;
+        try {
+            if (!user) throw new Error('Sign in before changing rooms.');
+            const projectData = structuredClone(project.project_data);
+            if (action === 'rename') {
+                const renamed = projectData.zones[index];
+                renamed.roomType = 'Other';
+                renamed.customRoomType = name;
+                if (renamed.layoutZoneName) {
+                    const prefix = renamed.layoutZoneName.match(/^Zone \d+[a-f]? - /i)?.[0] || '';
+                    renamed.layoutZoneName = prefix + name;
+                }
+            } else {
+                projectData.zones.splice(index, 1);
+            }
+            const { data, error } = await _supabase.from('install_projects')
+                .update({ project_data: projectData, updated_at: new Date().toISOString() })
+                .eq('id', project.id)
+                .eq('user_id', user.id)
+                .eq('updated_at', project.updated_at)
+                .select('id, project_name, client_name, project_data, updated_at')
+                .single();
+            if (error) throw error;
+            if (state.user !== user) return;
+            state.projects = state.projects.map(item => item.id === project.id ? data : item);
+            renderProjectFolders();
+        } catch (error) {
+            console.error('Dashboard room change failed:', error);
+            if (state.user === user) showError('projectDashboardError',
+                `Room was not ${action === 'rename' ? 'renamed' : 'deleted'}: ${error.message}. ` +
+                'Refresh the project list if it was changed in another tab, then retry.');
+        } finally {
+            button.disabled = false;
         }
     }
 
