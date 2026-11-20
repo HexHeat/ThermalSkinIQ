@@ -258,6 +258,9 @@
             toggle.textContent = expanded ? 'Hide rooms' : 'Show rooms';
             addButton(controls, 'Edit Project', () => openProject(project.id), 'portal-button');
             if (!state.support) {
+                const removeProject = addButton(controls, 'Delete Project',
+                    () => archiveDashboardProject(project, removeProject),
+                    'portal-button danger');
                 addButton(
                     controls, 'Request Live Help',
                     () => requestLiveHelp(project.id, null),
@@ -295,6 +298,45 @@
             folder.append(header, roomList);
             roomList.hidden = !expanded;
             root.append(folder);
+        }
+    }
+
+    async function updateDashboardProject(project, values, user) {
+        const { data, error } = await _supabase.from('install_projects')
+            .update({ ...values, updated_at: new Date().toISOString() })
+            .eq('id', project.id)
+            .eq('user_id', user.id)
+            .eq('updated_at', project.updated_at)
+            .is('archived_at', null)
+            .select('id, project_name, client_name, project_data, updated_at')
+            .single();
+        if (error) throw error;
+        return data;
+    }
+
+    async function archiveDashboardProject(project, button) {
+        if (button.disabled) return;
+        showError('projectDashboardError', '');
+        if (state.support) {
+            showError('projectDashboardError', 'End live help before deleting a project.');
+            return;
+        }
+        if (!confirm(`Remove "${project.project_name}" and all its zones from My Install Projects? ` +
+            'The project will be archived, not permanently erased. Its zones and support history will be retained.')) return;
+        const user = state.user;
+        button.disabled = true;
+        try {
+            if (!user) throw new Error('Sign in before deleting a project.');
+            await updateDashboardProject(project, { archived_at: new Date().toISOString() }, user);
+            if (state.user !== user) return;
+            state.projects = state.projects.filter(item => item.id !== project.id);
+            renderProjectFolders();
+        } catch (error) {
+            console.error('Install project archive failed:', error);
+            if (state.user === user) showError('projectDashboardError',
+                `Project was not deleted: ${error.message}. End any open live help and refresh the project list before retrying.`);
+        } finally {
+            button.disabled = false;
         }
     }
 
@@ -336,14 +378,7 @@
             } else {
                 projectData.zones.splice(index, 1);
             }
-            const { data, error } = await _supabase.from('install_projects')
-                .update({ project_data: projectData, updated_at: new Date().toISOString() })
-                .eq('id', project.id)
-                .eq('user_id', user.id)
-                .eq('updated_at', project.updated_at)
-                .select('id, project_name, client_name, project_data, updated_at')
-                .single();
-            if (error) throw error;
+            const data = await updateDashboardProject(project, { project_data: projectData }, user);
             if (state.user !== user) return;
             state.projects = state.projects.map(item => item.id === project.id ? data : item);
             renderProjectFolders();
@@ -362,6 +397,7 @@
         const { data, error } = await _supabase
             .from('install_projects')
             .select('id, project_name, client_name, project_data, updated_at')
+            .is('archived_at', null)
             .order('updated_at', { ascending: false });
         if (error) throw error;
         state.projects = data || [];
@@ -374,6 +410,7 @@
             .from('install_projects')
             .select('id, project_name, client_name, project_data')
             .eq('id', projectId)
+            .is('archived_at', null)
             .single();
         if (error) {
             showError('projectDashboardError', `Could not open project: ${error.message}`);
