@@ -635,6 +635,12 @@
         <section class="project-card" id="grandSummary" style="border-top: 5px solid #28a745;">
             <h2>Project Material Takeoff & Summary</h2>
             <div class="summary-grid">
+                <div class="circuit-card">
+                    <h3 style="margin-top:0;">Floor Area &amp; Heater Coverage</h3>
+                    <p>Total Floor Area: <strong id="summaryFloorArea">0.0 sq ft</strong></p>
+                    <p>Total Heated Area: <strong id="summaryHeatedArea">0.0 sq ft</strong></p>
+                    <p>Overall Coverage: <strong id="summaryCoverage">0.0%</strong></p>
+                </div>
                 <div class="circuit-card" style="border-left-color: #17a2b8;">
                     <h3 style="margin-top:0;">Global Load</h3>
                     <p>Total Project Watts: <strong id="gTotalWatts">0.00 W</strong></p>
@@ -1042,6 +1048,16 @@
             updateZoneNumbers();
         }
 
+        function layoutInventoryHeaterValue(item) {
+            const normalizeName = name => name.trim().toLowerCase().replace(/^115v\b/, '120v');
+            const name = normalizeName(item.name || '');
+            const options = document.querySelector('.heater-select')?.options || [];
+            const match = [...options].find(option =>
+                option.value !== "0|0|0|0" &&
+                normalizeName(option.textContent.split('(')[0]) === name);
+            return match ? match.value : item.heaterValue;
+        }
+
         function remainingLayoutHeaters(inventory, circuitHeaters) {
             const assignedByModel = new Map();
             for (const heater of circuitHeaters) {
@@ -1049,10 +1065,13 @@
                 assignedByModel.set(heater.heaterValue,
                     (assignedByModel.get(heater.heaterValue) || 0) + heater.qty);
             }
-            return inventory.map(item => ({
-                ...item,
-                remaining: Math.max(0, item.qty - (assignedByModel.get(item.heaterValue) || 0)),
-            }));
+            return inventory.map(item => {
+                const model = layoutInventoryHeaterValue(item);
+                const assigned = assignedByModel.get(model) || 0;
+                const consumed = Math.min(item.qty, assigned);
+                assignedByModel.set(model, assigned - consumed);
+                return { ...item, remaining: item.qty - consumed };
+            });
         }
 
         function circuitHeatersForZone(zone) {
@@ -1303,6 +1322,13 @@
             document.getElementById('gFloorArea').innerText = `${gFloorArea.toFixed(1)} sq ft`;
             document.getElementById('gHeatedArea').innerText = `${gHeatedArea.toFixed(1)} sq ft`;
             document.getElementById('gCoverage').innerText = `${(gFloorArea > 0 ? gHeatedArea / gFloorArea * 100 : 0).toFixed(1)}%`;
+            for (const [source, target] of [
+                ['gFloorArea', 'summaryFloorArea'],
+                ['gHeatedArea', 'summaryHeatedArea'],
+                ['gCoverage', 'summaryCoverage'],
+            ]) {
+                document.getElementById(target).textContent = document.getElementById(source).textContent;
+            }
 
             const listEl = document.getElementById('gHeaterList');
             listEl.replaceChildren();
