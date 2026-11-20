@@ -82,7 +82,7 @@
         byId('myProjectsButton').hidden = view === 'projects';
         byId('adminDashboardButton').hidden = !state.isAdmin || view === 'admin';
         byId('portalTitle').textContent = view === 'projects'
-            ? 'My Install Projects' : 'Heater Install Portal';
+            ? 'My Install Projects' : view === 'admin' ? 'Admin Dashboard' : 'Project Editor';
     }
 
     function stableStringify(value) {

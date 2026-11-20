@@ -415,6 +415,7 @@
         .portal-brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
         .portal-brand img { width: min(36vw, 180px); height: auto; }
         .portal-brand h2 { margin: 0; font-size: 1rem; }
+        .portal-app-name { display: block; color: #0056b3; font-size: 1.15rem; margin-bottom: 4px; }
         .portal-account { display: grid; justify-items: end; gap: 6px; min-width: 0; }
         #userEmailDisplay { color: #526170; font-size: .85rem; overflow-wrap: anywhere; }
         .portal-nav-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -511,7 +512,7 @@
     <div id="authScreen" class="container">
         <div class="auth-card">
             <img src="thermal-skiniq-logo.png" alt="ThermalSkinIQ">
-            <h1>Heater Install Portal</h1>
+            <h1>Heater Install App</h1>
             <p id="authIntro">Please log in to access your projects.</p>
             <div id="authError" style="color:red; margin-bottom:10px; font-weight:bold; display:none;"></div>
             <input type="email" id="email" placeholder="Email Address">
@@ -527,7 +528,10 @@
         <div class="top-nav portal-toolbar">
             <div class="portal-brand">
                 <img src="thermal-skiniq-logo.png" alt="ThermalSkinIQ">
-                <h2 id="portalTitle">Heater Install Portal</h2>
+                <div>
+                    <strong class="portal-app-name">Heater Install App</strong>
+                    <h2 id="portalTitle">My Install Projects</h2>
+                </div>
             </div>
             <div class="portal-account">
                 <span id="userEmailDisplay"></span>
