@@ -1091,6 +1091,10 @@
             installDemo.exit();
             return;
         }
+        if (!state.isAdmin) {
+            showError('projectDashboardError', 'Administrator access is required.');
+            return;
+        }
         if (state.view === 'editor') {
             await window.backToProjects();
             if (state.view !== 'projects') return;
@@ -1341,7 +1345,6 @@
             await initializePortal();
         } finally {
             state.initializing = false;
-            byId('authInstallDemoButton').disabled = false;
             byId('dashboardInstallDemoButton').disabled = false;
         }
     };
