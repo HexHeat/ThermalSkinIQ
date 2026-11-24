@@ -179,6 +179,11 @@
 
     window.packageProjectData = function () {
         const data = updateZoneIds(originalPackageProjectData());
+        const zoneBlocks = document.querySelectorAll('.zone-block');
+        data.zones.forEach((zoneData, index) => {
+            const layoutImage = zoneBlocks[index]?.dataset.layoutImage;
+            if (layoutImage) zoneData.layoutImage = layoutImage;
+        });
         data.id = activeProjectId || null;
         data.layoutImport = layoutImportMetadata;
         data.projectDate = byId('projectDate').value;
@@ -207,6 +212,14 @@
             zone.dataset.zoneId = zoneData.id || makeId();
             zone.dataset.layoutZoneName = zoneData.layoutZoneName || '';
             zone.dataset.layoutInventory = JSON.stringify(zoneData.layoutInventory || []);
+            const layoutImage = typeof zoneData.layoutImage === 'string' &&
+                zoneData.layoutImage.startsWith('data:image/svg+xml')
+                ? zoneData.layoutImage : '';
+            zone.dataset.layoutImage = layoutImage;
+            const imageFrame = zone.querySelector('.layout-zone-image-frame');
+            const image = zone.querySelector('.layout-zone-image');
+            imageFrame.hidden = !layoutImage;
+            if (layoutImage) image.src = layoutImage;
             const roomType = zone.querySelector('.room-type');
             roomType.value = zoneData.roomType || 'Bedroom';
             const customRoom = zone.querySelector('.custom-room-type');
