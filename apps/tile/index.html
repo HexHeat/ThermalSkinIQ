@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tile installation material takeoff estimator">
+  <title>Tile Install Flowchart | ThermalSkinIQ</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font: 16px/1.45 Roboto, "Segoe UI", Arial, sans-serif;
+      color: #24232a;
+      background: #fff8ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body { margin: 0; background: #fff8ff; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 18px max(20px, calc((100% - 760px) / 2));
+      background: #ffb84d;
+      box-shadow: 0 2px 5px #0002;
+    }
+
+    h1 { margin: 0; font-size: clamp(1.7rem, 5vw, 2.2rem); line-height: 1.2; }
+
+    main { width: min(100%, 760px); margin: 0 auto; padding: 20px 16px 36px; }
+
+    .card {
+      margin: 18px 0;
+      padding: clamp(18px, 4vw, 28px);
+      border-radius: 22px;
+      background: #f7f1f8;
+      box-shadow: 0 3px 7px #0003;
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #d5ced8;
+      color: #617f8c;
+      font-size: 1.35rem;
+    }
+
+    .fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .62fr); gap: 14px; }
+    .field { min-width: 0; }
+    .field.manufacturer { grid-column: 1; }
+    .field.tile-choice { grid-column: 2; }
+    .field.trowel { grid-column: 1; }
+    .field.color { grid-column: 2; }
+    .field.area { grid-template-columns: 1fr; }
+    .field[hidden] { display: none; }
+
+    label { display: block; margin: 0 0 7px; color: #55515b; font-size: .95rem; }
+
+    select, input {
+      width: 100%;
+      min-height: 62px;
+      padding: 12px 14px;
+      border: 2px solid #89848d;
+      border-radius: 9px;
+      background: #fffaff;
+      color: inherit;
+      font: inherit;
+      font-size: 1.1rem;
+    }
+
+    select:focus, input:focus, button:focus-visible, a:focus-visible {
+      outline: 3px solid #7460ad;
+      outline-offset: 2px;
+    }
+
+    .area-input { position: relative; }
+    .area-input input { padding-right: 58px; }
+    .area-input::after {
+      content: "sq. ft.";
+      position: absolute;
+      top: 50%;
+      right: 16px;
+      transform: translateY(-50%);
+      color: #55515b;
+      pointer-events: none;
+    }
+
+    button {
+      width: 100%;
+      min-height: 68px;
+      margin: 10px 0 18px;
+      border: 0;
+      border-radius: 40px;
+      background: #ff9800;
+      color: white;
+      font: inherit;
+      font-size: 1.3rem;
+      font-weight: 750;
+      cursor: pointer;
+      box-shadow: 0 3px 5px #0003;
+    }
+
+    button:hover { background: #eb8900; }
+    .error { margin: 0 0 14px; color: #a32121; font-weight: 650; }
+
+    .result {
+      padding: clamp(18px, 4vw, 30px);
+      border: 4px solid #299ce8;
+      border-radius: 18px;
+      background: #e4f2ff;
+    }
+
+    .result[hidden], .error[hidden] { display: none; }
+
+    .result h2 {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      color: #299ce8;
+      text-align: center;
+      font-size: 1.8rem;
+    }
+
+    .waste-note {
+      margin: 4px 0 18px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #55b3ee;
+      color: #617f8c;
+      text-align: center;
+      font-size: 1.1rem;
+      font-style: italic;
+    }
+
+    .takeoff-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px 14px;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 2px solid #c8dce8;
+    }
+
+    .takeoff-row:last-of-type { border-bottom: 0; }
+    .row-title { grid-column: 1 / -1; margin: 0; font-size: 1.2rem; font-weight: 750; }
+    .product { margin: 0; color: #617f8c; font-size: 1.12rem; }
+    .quantity { margin: 0; color: #4caf50; font-size: clamp(1.35rem, 5vw, 2rem); font-weight: 750; white-space: nowrap; }
+    .detail { grid-column: 1 / -1; margin: -4px 0 0; font-style: italic; }
+    .warning { margin: 18px 0 0; color: #617f8c; font-size: 1.08rem; font-style: italic; }
+    .footnote { margin: 14px 0 0; color: #52616b; font-size: .88rem; }
+    .launch-link { display: inline-block; margin: 6px 0 20px; color: #174e76; font-weight: 650; }
+
+    @media (max-width: 430px) {
+      .fields { grid-template-columns: minmax(0, 1fr) minmax(0, .58fr); gap: 12px; }
+      select, input { min-height: 58px; padding: 10px; font-size: 1rem; }
+      .tile-choice select { padding-right: 24px; }
+      .quantity { font-size: 1.35rem; }
+      .result h2 { font-size: 1.55rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tile Install Flowchart</h1>
+  </header>
+  <main>
+    <form id="takeoff-form" novalidate>
+      <section class="card" aria-labelledby="substrate-heading">
+        <h2 id="substrate-heading">Step 1: Substrate</h2>
+        <div class="field">
+          <label for="substrate">What substrate (material) are you working with?</label>
+          <select id="substrate" name="substrate">
+            <option>Wood / Plywood Sub-Floor</option>
+            <option>Concrete Slab</option>
+            <option>Existing Tile</option>
+            <option>Cement Board</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="materials-heading">
+        <h2 id="materials-heading">Step 2: Material Selection</h2>
+        <div class="fields">
+          <div class="field manufacturer">
+            <label for="manufacturer">Chemical Manufacturer</label>
+            <select id="manufacturer" name="manufacturer">
+              <option>Laticrete</option>
+              <option>Ardex</option>
+              <option>Mapei</option>
+              <option>Schluter</option>
+              <option>Custom</option>
+              <option>TEC</option>
+            </select>
+          </div>
+          <div class="field tile-choice">
+            <label for="install-tile">Installing Tile?</label>
+            <select id="install-tile" name="install-tile">
+              <option value="yes" selected>Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="field trowel" id="trowel-field">
+            <label for="trowel">Trowel Size</label>
+            <select id="trowel" name="trowel">
+              <option value="100">1/4 x 1/4</option>
+              <option value="80">1/4 x 3/8</option>
+              <option value="50">1/2 x 1/2</option>
+              <option value="35">3/4&quot; x 9/16&quot; x 3/4&quot;</option>
+            </select>
+          </div>
+          <div class="field color" id="color-field">
+            <label for="color">Color</label>
+            <select id="color" name="color">
+              <option>Grey</option>
+              <option>White</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="dimensions-heading">
+        <h2 id="dimensions-heading">Step 3: Dimensions</h2>
+        <div class="field area">
+          <label for="area">Total Heated Area (Sq.Ft.)</label>
+          <div class="area-input">
+            <input id="area" name="area" type="number" min="0.01" step="any" inputmode="decimal" required>
+          </div>
+        </div>
+      </section>
+
+      <button type="submit">▦ &nbsp; CALCULATE TAKEOFF</button>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+
+    <section class="result" id="result" aria-labelledby="result-heading" aria-live="polite" hidden>
+      <h2 id="result-heading">MATERIAL TAKEOFF</h2>
+      <p class="waste-note">Includes a standard 10% waste factor</p>
+      <div id="takeoff-details"></div>
+      <p class="footnote">Estimate only. Confirm product coverage and substrate suitability with current manufacturer instructions before ordering or installation.</p>
+    </section>
+
+    <a class="launch-link" href="./" target="_blank" rel="noopener">Open Tile Install Flowchart in a separate page</a>
+  </main>
+  <script>
+    const products = {
+      Laticrete: { primer: 'Prime N Bond', thinset: '254 Platinum' },
+      Ardex: { primer: 'ARDEX P 4', thinset: 'ARDEX X 77™' },
+      Mapei: { primer: 'ECO Prim Grip', thinset: 'Keraflex Super' },
+      Schluter: { primer: 'PRIMER-U', thinset: 'ALL-SET' },
+      Custom: { primer: 'MBP Primer', thinset: 'MegaFlex®' },
+      TEC: { primer: 'Fortane Primer', thinset: 'Super Flex™' },
+    };
+    const wasteMultiplier = 1.1;
+    const primerCoverageSqFt = 525;
+    const form = document.getElementById('takeoff-form');
+    const tileChoice = document.getElementById('install-tile');
+    const trowelField = document.getElementById('trowel-field');
+    const colorField = document.getElementById('color-field');
+    const result = document.getElementById('result');
+    const details = document.getElementById('takeoff-details');
+    const error = document.getElementById('error');
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text) node.textContent = text;
+      return node;
+    }
+
+    function addRow(title, product, quantity, detail) {
+      const row = element('div', 'takeoff-row');
+      row.append(element('h3', 'row-title', title));
+      row.append(element('p', 'product', product));
+      row.append(element('p', 'quantity', quantity));
+      if (detail) row.append(element('p', 'detail', detail));
+      details.append(row);
+    }
+
+    function syncTileOptions() {
+      const installingTile = tileChoice.value === 'yes';
+      trowelField.hidden = !installingTile;
+      colorField.hidden = !installingTile;
+    }
+
+    function clearResult() {
+      result.hidden = true;
+      details.replaceChildren();
+      error.hidden = true;
+      error.textContent = '';
+    }
+
+    tileChoice.addEventListener('change', syncTileOptions);
+    form.addEventListener('input', clearResult);
+    form.addEventListener('change', clearResult);
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      clearResult();
+
+      const area = Number(document.getElementById('area').value);
+      if (!Number.isFinite(area) || area <= 0) {
+        error.textContent = 'Enter a heated area greater than zero to calculate the takeoff.';
+        error.hidden = false;
+        document.getElementById('area').focus();
+        return;
+      }
+
+      const substrate = document.getElementById('substrate').value;
+      const manufacturer = document.getElementById('manufacturer').value;
+      const materials = products[manufacturer];
+      const primerPails = Math.ceil((area * wasteMultiplier) / primerCoverageSqFt);
+      let thinsetBags;
+      let thinsetProduct;
+      let trowel;
+
+      if (tileChoice.value === 'yes') {
+        const coverage = Number(document.getElementById('trowel').value);
+        const color = document.getElementById('color').value;
+        thinsetBags = Math.round((area * wasteMultiplier) / coverage);
+        thinsetProduct = `${materials.thinset} (${color})`;
+        trowel = document.getElementById('trowel').selectedOptions[0].textContent;
+      }
+
+      if (!Number.isSafeInteger(primerPails) || (thinsetBags !== undefined && !Number.isSafeInteger(thinsetBags))) {
+        error.textContent = 'The entered area is too large to calculate safely. Enter a smaller heated area.';
+        error.hidden = false;
+        document.getElementById('area').focus();
+        return;
+      }
+
+      addRow('Primer Required:', materials.primer, `${primerPails} Pail(s)`, `For ${substrate}`);
+
+      if (tileChoice.value === 'yes') {
+        addRow('Thinset Required:', thinsetProduct, `${thinsetBags} Bag(s)`, `Applied with ${trowel} trowel`);
+      } else {
+        details.append(element(
+          'p',
+          'warning',
+          'Thinset omitted. Ensure heaters are encapsulated with an approved Self-Leveling Underlayment (SLU) before laying alternative flooring.',
+        ));
+      }
+
+      result.hidden = false;
+    });
+
+    syncTileOptions();
+  </script>
+</body>
+</html>
