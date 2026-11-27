@@ -563,6 +563,22 @@
                 row.append(coverage);
             }
             if (state.canGrantAdmin) {
+                if (!user.is_manager) {
+                    addButton(row, 'Remove Admin', async () => {
+                        if (!confirm(
+                            `Remove admin access for ${user.email} in both Layout and Install? ` +
+                            'Their on-call or backup assignment will also be removed.'
+                        )) return;
+                        try {
+                            const { error } = await rpc('support_revoke_admin', { p_user_id: user.user_id });
+                            if (error) throw error;
+                            alert('Admin access removed. The user should sign in again.');
+                            await loadAdminDashboard();
+                        } catch (error) {
+                            showError('adminDashboardError', `Could not remove admin access: ${error.message}`);
+                        }
+                    }, 'portal-button secondary');
+                }
                 for (const [slot, label] of [['primary', 'Set on call'], ['backup', 'Set backup']]) {
                     if (user.coverage === slot) continue;
                     addButton(row, label, async () => {
