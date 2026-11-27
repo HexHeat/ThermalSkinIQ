@@ -670,6 +670,10 @@
             const { data, error } = await rpc('install_admin_report');
             if (error) throw error;
             if (state.user !== user || !state.isAdmin) return;
+            const entries = Object.entries(data.heater_counts).filter(([, qty]) => qty > 0);
+            if (entries.some(([name]) => !Number.isFinite(data.heater_areas_sqft?.[name]))) {
+                throw new Error('Heater area data is unavailable. The report database update is required.');
+            }
             const root = byId('installReport');
             const number = value => new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value);
             const percentage = value => value === null ? 'Not available' : `${number(value)}%`;
@@ -691,13 +695,12 @@
             const heading = document.createElement('h3');
             heading.textContent = 'Heaters by type';
             root.append(heading);
-            const entries = Object.entries(data.heater_counts).filter(([, qty]) => qty > 0);
             if (!entries.length) addLine('No heaters in saved active projects.');
             else {
                 const list = document.createElement('ul');
                 entries.sort(([a], [b]) => a.localeCompare(b)).forEach(([name, qty]) => {
                     const item = document.createElement('li');
-                    item.textContent = `${name}: ${number(qty)}`;
+                    item.textContent = `${name}: ${number(qty)} ${qty === 1 ? 'heater' : 'heaters'} — ${number(data.heater_areas_sqft[name])} sq. ft.`;
                     list.append(item);
                 });
                 root.append(list);
