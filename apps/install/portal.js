@@ -660,6 +660,55 @@
         renderHelpRequests();
     }
 
+    async function loadInstallReport() {
+        const user = state.user;
+        const button = byId('loadInstallReport');
+        button.disabled = true;
+        byId('installReport').replaceChildren();
+        showError('installReportError', '');
+        try {
+            const { data, error } = await rpc('install_admin_report');
+            if (error) throw error;
+            if (state.user !== user || !state.isAdmin) return;
+            const root = byId('installReport');
+            const number = value => new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 }).format(value);
+            const percentage = value => value === null ? 'Not available' : `${number(value)}%`;
+            const addLine = text => {
+                const line = document.createElement('p');
+                line.textContent = text;
+                root.append(line);
+            };
+            addLine(`Active projects: ${number(data.project_count)} | Rooms: ${number(data.room_count)}`);
+            addLine(`Total heater coverage: ${number(data.total_heated_sqft)} sq. ft.`);
+            addLine(`Total floor area: ${number(data.total_floor_sqft)} sq. ft.`);
+            addLine(`Average room coverage: ${percentage(data.average_room_coverage)} (${number(data.valid_room_count)} rooms)`);
+            addLine(`Average project coverage: ${percentage(data.average_project_coverage)} (${number(data.valid_project_count)} projects)`);
+            addLine(`Overall area-weighted coverage: ${percentage(data.overall_coverage)}`);
+            if (data.incomplete_room_count) {
+                const count = data.incomplete_room_count;
+                addLine(`${number(count)} ${count === 1 ? 'room lacks' : 'rooms lack'} floor area. Those rooms are excluded from coverage averages; projects containing them are excluded from the project average.`);
+            }
+            const heading = document.createElement('h3');
+            heading.textContent = 'Heaters by type';
+            root.append(heading);
+            const entries = Object.entries(data.heater_counts).filter(([, qty]) => qty > 0);
+            if (!entries.length) addLine('No heaters in saved active projects.');
+            else {
+                const list = document.createElement('ul');
+                entries.sort(([a], [b]) => a.localeCompare(b)).forEach(([name, qty]) => {
+                    const item = document.createElement('li');
+                    item.textContent = `${name}: ${number(qty)}`;
+                    list.append(item);
+                });
+                root.append(list);
+            }
+        } catch (error) {
+            if (state.user === user) showError('installReportError', `Could not load report: ${error.message}`);
+        } finally {
+            button.disabled = false;
+        }
+    }
+
     async function showProjects() {
         setView('projects');
         try {
@@ -1193,6 +1242,8 @@
         state.support = null;
         state.isAdmin = false;
         state.isOwner = false;
+        byId('installReport').replaceChildren();
+        showError('installReportError', '');
         state.editorAcknowledged = '';
         currentUserId = null;
         activeProjectId = null;
@@ -1252,6 +1303,7 @@
                 showError('adminDashboardError', `Could not search users: ${error.message}`));
         }, 250);
     });
+    byId('loadInstallReport').addEventListener('click', loadInstallReport);
 
     byId('liveSupportRoom').addEventListener('change', () => {
         state.supportZoneId = byId('liveSupportRoom').value;

@@ -631,6 +631,13 @@
             <h1 class="admin-heading">Admin Dashboard</h1>
             <div id="adminDashboardError" class="sync-error" role="alert"></div>
             <p id="supportCoverageStatus" role="status"></p>
+            <section class="portal-panel admin-section">
+                <h2>Installation Reports</h2>
+                <p class="admin-muted">Aggregate results from active saved Install projects across all users. Archived projects and practice demos are excluded.</p>
+                <button id="loadInstallReport" class="portal-button" type="button">Load / Refresh Report</button>
+                <p id="installReportError" class="sync-error" role="alert"></p>
+                <div id="installReport" aria-live="polite"></div>
+            </section>
             <div class="admin-search">
                 <label for="directorySearch">Search accounts by email</label>
                 <input id="directorySearch" type="search" placeholder="Enter an email address">
